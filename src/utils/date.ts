@@ -1,7 +1,7 @@
 
 export default function hasMin48Hours(dateISO: string) {
-    // Fecha de la visita a las 09:30
-    const visitDate = new Date(`${dateISO}T09:30:00`);
+    // Fecha de la visita a las 14:00
+    const visitDate = new Date(`${dateISO}T14:00:00`);
 
     const now = new Date();
 

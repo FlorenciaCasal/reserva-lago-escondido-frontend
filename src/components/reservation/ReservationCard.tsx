@@ -82,7 +82,7 @@ export default function ReservationCard({ data }: { data: ReservationView }) {
                         <p className="font-semibold">Horario</p>
                         <p className="text-gray-700">
                             {/* <span className="text-sm">⏳</span> */}
-                            09:30 hs</p>
+                            14:00 hs</p>
                         {/* <p className="text-sm">⏳ Por favor, llegá 15 minutos antes.</p> */}
                         <p className="text-sm text-primary flex items-center">
                             Por favor, llegá 15 minutos antes.

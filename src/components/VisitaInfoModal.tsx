@@ -40,7 +40,7 @@ export default function VisitaInfoModal({ open, onClose }: Props) {
 
                         <div className="text-[12px] md:text-[14px] text-main leading-relaxed space-y-3">
                             <p>
-                                Las visitas se realizan por la mañana, a las {" "} <strong>09:30 h.</strong>
+                                Las visitas se realizan por la tarde, a las {" "} <strong>14:00 h.</strong>
                                 <br />
                                 Te pedimos llegar 15 minutos antes del horario indicado para comenzar de manera puntual.
 
