@@ -27,7 +27,7 @@ export default function Page() {
       {/* ===== PROTECCIÓN ACTIVA ===== */}
       <section className="py-6 bg-primary">
         <h2 className="text-center text-white text-lg font-semibold">
-          PROTECCIÓN ACTIVA DE LA NATURALEZA
+          PROTECCIÓ ACTIVA DE LA NATURALEZA
         </h2>
       </section>
 
