@@ -9,6 +9,7 @@ import MaintenancePage from "@/components/MaintenancePage";
 export const metadata: Metadata = {
   title: "Reserva Natural Lago Escondido",
   description: "Reserva Natural Lago Escondido",
+  metadataBase: new URL(process.env.APP_ORIGIN ?? "http://localhost:3000"),
 };
 
 const montserrat = Montserrat({

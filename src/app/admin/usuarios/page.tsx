@@ -368,7 +368,7 @@ ${pwdError ? "border border-red-500" : "border border-neutral-700"}`}
                                 tabIndex={-1}
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => setShowPwd(v => !v)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400 hover:text-neutral-200 select-none"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-300 hover:text-neutral-100 select-none"
                                 aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
                             >
                                 {showPwd ? "Ocultar" : "Mostrar"}
@@ -412,12 +412,12 @@ ${pwdError ? "border border-red-500" : "border border-neutral-700"}`}
                         <h2 className="font-medium">Usuarios del sistema</h2>
                     </div>
                     {loading ? (
-                        <div className="p-6 text-neutral-400">Cargando…</div>
+                        <div className="p-6 text-neutral-300">Cargando…</div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead className="bg-neutral-900/60">
-                                    <tr className="[&>th]:px-4 [&>th]:py-2 text-left text-neutral-400">
+                                    <tr className="[&>th]:px-4 [&>th]:py-2 text-left text-neutral-300">
                                         <th>Nombre</th>
                                         <th>Email</th>
                                         <th>Teléfono</th>
@@ -458,7 +458,7 @@ ${pwdError ? "border border-red-500" : "border border-neutral-700"}`}
                                     ))}
                                     {users.length === 0 && (
                                         <tr>
-                                            <td className="px-4 py-8 text-center text-neutral-400" colSpan={5}>
+                                            <td className="px-4 py-8 text-center text-neutral-300" colSpan={5}>
                                                 No hay usuarios todavía.
                                             </td>
                                         </tr>

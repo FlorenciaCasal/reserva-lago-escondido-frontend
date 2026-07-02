@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 
 export default function AdminSidebarClient({
     isAdmin,
+    isAdminLimit,
     children,
 }: {
     isAdmin: boolean;
+    isAdminLimit: boolean;
     children: React.ReactNode;
 }) {
     const [open, setOpen] = React.useState(false);
@@ -24,6 +26,8 @@ export default function AdminSidebarClient({
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, []);
+
+    const canManageProjects = isAdmin || isAdminLimit;
 
     return (
         <>
@@ -69,6 +73,12 @@ export default function AdminSidebarClient({
                                 <Link href="/admin/usuarios"
                                     className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/usuarios" ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
                                     Usuarios
+                                </Link>
+                            )}
+                            {canManageProjects && (
+                                <Link href="/admin/proyectos"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Proyectos
                                 </Link>
                             )}
 
@@ -141,6 +151,16 @@ export default function AdminSidebarClient({
                                         className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/usuarios" ? "bg-neutral-900" : ""}`}
                                     >
                                         Usuarios
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageProjects && (
+                                <li>
+                                    <Link
+                                        href="/admin/proyectos"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Proyectos
                                     </Link>
                                 </li>
                             )}

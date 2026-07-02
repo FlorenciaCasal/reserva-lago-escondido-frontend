@@ -14,6 +14,8 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
   const isCalendario = pathname == "/admin/calendario";
   const isReservas = pathname == "/admin/reservas";
   const isUsuarios = pathname == "/admin/usuarios";
+  const isProjectsPage = pathname === "/proyectos" || pathname.startsWith("/proyectos/");
+  const canAccessAdmin = isLogged && (isAdmin || isAdminLimit);
 
   // 👇 rutas donde NO queremos mostrar el navbar
   const HIDE_ON: string[] = ["/politicas-de-visita"];
@@ -57,8 +59,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </Link>
               {/* NAV PÚBLICO (placeholders) */}
               <div className="hidden sm:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
-                {/* <span className="cursor-default">PROYECTOS</span> */}
-                <Link href="/#proyectos" className="hover:text-secondary-dark transition">
+                <Link href="/proyectos" className="hover:text-secondary-dark transition">
                   PROYECTOS
                 </Link>
                 {/* <span className="cursor-default">CONTACTO</span> */}
@@ -72,7 +73,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
             {/* ===== DERECHA: ACCIONES ===== */}
             <div className="hidden sm:flex items-center gap-4 text-sm">
 
-              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas) && (isLogged && (isAdmin || isAdminLimit)) && (
+              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage) && canAccessAdmin && (
                 <Link
                   href="/admin"
                   className="text-primary hover:text-secondary-dark transition pl-4"
@@ -192,7 +193,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </li>
             )}
 
-            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas) && (isLogged && isAdmin || isAdminLimit) && (
+            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage) && canAccessAdmin && (
               <li>
                 <Link
                   href="/admin"

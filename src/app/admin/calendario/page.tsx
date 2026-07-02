@@ -220,7 +220,7 @@ export default function CalendarioAdminPage() {
                                 {/* <span className="text-sm text-neutral-400">
                                     Hacé clic en un día para alternar su estado.
                                 </span> */}
-                                <span className="text-xs  text-neutral-400 sm:ml-1">
+                                <span className="text-xs  text-neutral-300 sm:ml-1">
                                     Tocá un día para alternar su estado.
                                 </span>
                             </div>
@@ -287,7 +287,7 @@ export default function CalendarioAdminPage() {
                                             <button
                                                 // onClick={() => setSelectedDay(null)}
                                                 onClick={() => setCapacityModalDay(null)}
-                                                className="text-sm text-neutral-400"
+                                                className="text-sm text-neutral-300"
                                             >
                                                 Cancelar
                                             </button>
@@ -333,7 +333,7 @@ export default function CalendarioAdminPage() {
                     <div className="grid grid-cols-7 gap-1 sm:gap-2 rounded-2xl border border-neutral-800 p-2 sm:p-4 bg-neutral-950">
                         {["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"].map(h => (
                             // <div key={h} className="text-center text-neutral-400 text-xs">
-                            <div key={h} className="text-center text-neutral-400 text-[11px] sm:text-xs">
+                            <div key={h} className="text-center text-neutral-300 text-[11px] sm:text-xs">
                                 {h}
                             </div>
                         ))}
@@ -403,7 +403,7 @@ export default function CalendarioAdminPage() {
                                 </h3>
                                 <button
                                     onClick={() => setSelectedDay(null)}
-                                    className="text-neutral-400 hover:text-white"
+                                    className="text-neutral-300 hover:text-white"
                                 >
                                     ✕
                                 </button>
@@ -412,7 +412,7 @@ export default function CalendarioAdminPage() {
                                 {/* <table className="min-w-full text-sm"> */}
                                 <table className="min-w-full text-xs sm:text-sm">
                                     <thead className="bg-white/5">
-                                        <tr className="[&>th]:px-4 [&>th]:py-2 [&>th]:text-left text-neutral-400">
+                                        <tr className="[&>th]:px-4 [&>th]:py-2 [&>th]:text-left text-neutral-300">
                                             <th>Nombre y apellido</th>
                                             <th>Pax</th>
                                             <th>Tipo</th>
