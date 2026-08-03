@@ -1,73 +1,6 @@
-// "use client";
-// import { usePathname } from "next/navigation";
-// // import Link from "next/link";
-// // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// // import { faSquareFacebook, faInstagram } from "@fortawesome/free-brands-svg-icons";
-
-
-// export default function Footer() {
-//   const pathname = usePathname();
-//   const HIDE_ON: string[] = ["/politicas-de-visita"];
-//   const hide = HIDE_ON.includes(pathname);
-
-//   if (hide) return null; // ⟵ no se renderiza nada
-
-//   return (
-//     // <footer className="w-full bg-[#D3B04D] text-white py-6 mt-10">
-//     // <footer className="w-full bg-[#E9E4DA] text-white py-4 sm:py-6">
-//     <footer className="w-full bg-[#fff] text-black py-4">
-//       {/* <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4"> */}
-//       {/* <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between gap-4"> */}
-//       <div
-//         className="
-//           mx-auto max-w-6xl px-4
-//           flex flex-col sm:flex-row
-//           items-center sm:items-center
-//           justify-between
-//           gap-4
-//           w-full
-//         "
-//       >
-//         {/* COPYRIGHT */}
-//         <span className="md:text-sm header text-xs opacity-90">
-//           © {new Date().getFullYear()} Reserva Natural Lago Escondido
-//         </span>
-
-//         {/* ENLACES (opcionales) */}
-//         {/* <div className="flex items-center gap-6 md:text-sm   font-size: 12pxtext-xs opacity-90"> */}
-
-
-
-
-//         {/*          Actualizar con face e instagram de la reserva!!!!
-
-//         <div className="flex items-center gap-6">
-//           <Link
-//             href="https://www.facebook.com/lagoescondido.ok"
-//             target="_blank"
-//           >
-//             <FontAwesomeIcon
-//               icon={faSquareFacebook}
-//               size="lg"
-//               className="hover:opacity-80 transition"
-//             />
-
-//           </Link>
-//           <Link href="https://www.instagram.com/lagoescondido.ok" target="_blank">
-//             <FontAwesomeIcon
-//               icon={faInstagram}
-//               size="lg"
-//               className="hover:opacity-80 transition"
-//             />
-//           </Link>
-//         </div> */}
-//       </div>
-//     </footer>
-//   );
-// }
-
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -95,63 +28,107 @@ function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function LocationIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      {...props}
+    >
+      <path d="M12 21s7-5.3 7-11a7 7 0 0 0-14 0c0 5.7 7 11 7 11z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+function EmailIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      {...props}
+    >
+      <path d="M4 6h16v12H4z" />
+      <path d="m4 7 8 6 8-6" />
+    </svg>
+  );
+}
+
 export default function Footer() {
   const pathname = usePathname();
   const HIDE_ON: string[] = ["/politicas-de-visita"];
   if (HIDE_ON.includes(pathname)) return null;
 
   return (
-    <footer id="footer" className="w-full bg-primary text-white scroll-mt-24">
-      <div className="px-6 py-6">
-        <div className="flex justify-center">
-          {/* <div className="grid grid-cols-1 gap-10 sm:grid-cols-3 w-full max-w-5xl">
-       */}
-          <div className="flex flex-col gap-6 sm:flex-row md:gap-20 lg:gap-44 xl:gap-86">
-            {/* VISÍTANOS */}
-            <div>
-              <h4 className="md:text-sm text-xs tracking-wide opacity-90 mb-2">
-                VISÍTANOS
-              </h4>
-              <p className="md:text-smtext-xs opacity-80 leading-relaxed">
-                Ruta 40 kilómetro 1948, El Foyel,
-                <br />
-                Río Negro, Argentina
+    <footer id="footer" className="w-full scroll-mt-24 bg-primary text-white">
+      <div className="mx-auto max-w-6xl px-2 py-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-[1.3fr_1fr_1fr] sm:items-start">
+          <div>
+            <Link href="/" aria-label="Ir al inicio">
+              <Image
+                src="/img/logoReserva.png"
+                alt="Reserva Natural Lago Escondido"
+                width={140}
+                height={48}
+                className="h-auto w-32 brightness-0 invert"
+              />
+            </Link>
+          </div>
+
+          <div>
+            <h4 className="mb-3 text-xs tracking-wide opacity-90 md:text-sm">
+              CONTACTO
+            </h4>
+            <div className="space-y-2 text-xs leading-relaxed opacity-85 md:text-sm">
+              <a href="mailto:info@reservalagoescondido.com.ar" className="flex items-start gap-2 break-all hover:underline">
+                <EmailIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
+                <span>info@reservalagoescondido.com.ar</span>
+              </a>
+              <p className="flex items-start gap-2">
+                <LocationIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
+                <span>Ruta 40 kilómetro 1948, El Foyel, Río Negro, Argentina</span>
               </p>
             </div>
+          </div>
 
-            {/* CONTACTO */}
-            <div>
-              <h4 className="md:text-sm footer text-xs tracking-wide opacity-90 mb-2">
-                CONTACTO
-              </h4>
-              <p className="md:text-sm   font-size: 9pxtext-xs opacity-80 break-all">
-                <a href="mailto:info@reservalagoescondido.com.ar" className="hover:underline">
-                  info@reservalagoescondido.com.ar
-                </a>
-              </p>
+          <div>
+            <h4 className="mb-3 text-xs tracking-wide opacity-90 md:text-sm">
+              SEGUINOS
+            </h4>
+            <div className="flex items-center gap-4">
+              <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <InstagramIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
+              </Link>
+              <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <FacebookIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
+              </Link>
+              <LinkedinIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
             </div>
+          </div>
+        </div>
 
-            {/* SEGUINOS */}
-            <div>
-              <h4 className="md:text-sm text-xs tracking-wide opacity-90 mb-2">
-                SEGUINOS
-              </h4>
-              <div className="flex items-center gap-4">
-                <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <InstagramIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-                </Link>
-                <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                  <FacebookIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-                </Link>
-                <LinkedinIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-              </div>
+        <div className="mt-8 border-t border-white/20 pt-5">
+          <div className="flex flex-col gap-3 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between">
+            <p>© 2026 Reserva Natural Lago Escondido. Todos los derechos reservados.</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <a href="#" className="transition hover:text-white">
+                Términos y condiciones
+              </a>
+              <a href="#" className="transition hover:text-white">
+                Política de privacidad
+              </a>
             </div>
-
           </div>
         </div>
       </div>
     </footer>
-
-
   );
 }
