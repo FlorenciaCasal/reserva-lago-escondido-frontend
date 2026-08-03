@@ -48,25 +48,27 @@ export default function ProjectDetailTabs() {
   };
 
   return (
-    <div className="flex flex-wrap gap-8 py-5 text-sm font-semibold text-neutral-700">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
+    <div className="-mx-4 px-3 min-[400px]:overflow-x-auto sm:mx-0 sm:overflow-visible sm:px-0">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 py-4 text-sm font-semibold text-neutral-700 min-[400px]:flex min-[400px]:min-w-max min-[400px]:gap-3 sm:w-auto sm:flex-wrap sm:gap-8 sm:py-5">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
 
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => scrollToSection(tab.id)}
-            className={`border-b-2 pb-2 transition-colors ${
-              isActive
-                ? "border-[#49A9A2] text-[#247E79]"
-                : "border-transparent text-neutral-600 hover:text-neutral-950"
-            }`}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => scrollToSection(tab.id)}
+              className={`whitespace-nowrap border-b-2 px-0.5 pb-2 pt-1 text-left transition-colors min-[400px]:shrink-0 min-[400px]:px-1 ${
+                isActive
+                  ? "border-[#49A9A2] text-[#247E79]"
+                  : "border-transparent text-neutral-600 hover:text-neutral-950"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

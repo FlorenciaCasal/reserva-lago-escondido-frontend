@@ -96,7 +96,7 @@ export default function PublicProjectDetail({
 
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
-      <section className="mx-auto max-w-7xl px-6 py-10 sm:px-8 sm:py-14">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-8 sm:py-14">
         <nav className="text-sm font-semibold text-neutral-600">
           <Link href="/proyectos" className="hover:text-neutral-900">
             Proyectos
@@ -142,12 +142,12 @@ export default function PublicProjectDetail({
       </section>
 
       <section className="border-y border-neutral-200 bg-[#FAFAF9]">
-        <div className="mx-auto max-w-7xl px-6 sm:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
           <ProjectDetailTabs />
         </div>
       </section>
 
-      <section id="descripcion" className="mx-auto max-w-7xl px-6 py-14 sm:px-8">
+      <section id="descripcion" className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-14">
         <div className="max-w-3xl">
           <article>
             <h2 className="font-serif text-3xl font-semibold text-neutral-900">Descripcion</h2>
@@ -158,11 +158,11 @@ export default function PublicProjectDetail({
         </div>
       </section>
 
-      <section id="avances" className="mx-auto max-w-7xl px-6 py-4 sm:px-8">
+      <section id="avances" className="mx-auto max-w-7xl px-4 py-4 sm:px-8">
         <div className="space-y-6">
           <div>
             <h2 className="font-serif text-3xl font-semibold text-neutral-900">Avances del proyecto</h2>
-            <p className="mt-4 max-w-3xl text-[17px] leading-8 text-neutral-700">
+            <p className="mt-4 max-w-3xl text-base leading-8 text-neutral-700 sm:text-[17px]">
               Seguimiento cronologico de los principales hitos y acciones realizadas en el marco de este proyecto.
             </p>
           </div>
@@ -173,31 +173,31 @@ export default function PublicProjectDetail({
               text="Cuando el proyecto comparta sus primeros hitos, esta linea de tiempo mostrara cada avance con fecha, descripcion y recursos asociados."
             />
           ) : (
-            <div className="relative space-y-10 pl-10 sm:pl-14">
-              <div className="absolute left-5 top-0 h-full w-px bg-neutral-200 sm:left-7" />
+            <div className="relative space-y-8 pl-7 sm:space-y-10 sm:pl-14">
+              <div className="absolute left-4 top-0 h-full w-px bg-neutral-200 sm:left-7" />
               {advances.map((advance, index) => {
                 const formattedDate = formatTimelineDate(advance.advanceDate);
                 return (
                   <article key={advance.id} className="relative grid gap-4 sm:grid-cols-[88px_minmax(0,1fr)] sm:gap-6">
                     <div className="relative flex gap-4 sm:block">
-                      <div className="absolute left-[-2.55rem] top-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#49A9A2] text-sm font-semibold text-white shadow-[0_10px_22px_-18px_rgba(73,169,162,0.9)] sm:left-[-3.55rem] sm:h-12 sm:w-12">
+                      <div className="absolute left-[-2.45rem] top-0 flex h-10 w-10 items-center justify-center rounded-full bg-[#49A9A2] text-sm font-semibold text-white shadow-[0_10px_22px_-18px_rgba(73,169,162,0.9)] sm:left-[-3.55rem] sm:top-2 sm:h-12 sm:w-12">
                         {index + 1}
                       </div>
-                      <div className="min-w-[68px] pt-14 text-center text-neutral-700 sm:pt-16">
+                      <div className="ml-4 min-w-[68px] pt-1 text-left text-neutral-700 sm:ml-0 sm:pt-16 sm:text-center">
                         <div className="text-xl font-semibold leading-none text-neutral-800">{formattedDate.day}</div>
                         <div className="mt-1 text-xs font-semibold tracking-wide text-neutral-700">{formattedDate.month}</div>
                         <div className="mt-1 text-xs text-neutral-600">{formattedDate.year}</div>
                       </div>
                     </div>
 
-                    <div className="rounded-[14px] border border-neutral-200 bg-white p-6 shadow-[0_16px_38px_-32px_rgba(15,23,42,0.35)]">
-                      <h3 className="font-serif text-2xl font-semibold text-neutral-900">{repairMojibake(advance.title)}</h3>
-                      <p className="mt-3 whitespace-pre-wrap text-[17px] leading-8 text-neutral-700">
+                    <div className="rounded-[14px] border border-neutral-200 bg-white p-4 shadow-[0_16px_38px_-32px_rgba(15,23,42,0.35)] sm:p-6">
+                      <h3 className="font-serif text-xl font-semibold text-neutral-900 sm:text-2xl">{repairMojibake(advance.title)}</h3>
+                      <p className="mt-3 whitespace-pre-wrap text-base leading-7 text-neutral-700 sm:text-[17px] sm:leading-8">
                         {renderLinkedText(advance.description)}
                       </p>
 
                       {(advance.imageUrl || advance.videoUrl) && (
-                        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                        <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2">
                           {advance.imageUrl && (
                             <div className="overflow-hidden rounded-[10px] border border-neutral-200 bg-neutral-100">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -240,7 +240,7 @@ export default function PublicProjectDetail({
         </div>
       </section>
 
-      <section id="galeria" className="mx-auto max-w-7xl px-6 py-10 sm:px-8">
+      <section id="galeria" className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
         <div className="space-y-6">
           <h2 className="font-serif text-3xl font-semibold text-neutral-900">Galeria</h2>
           {gallery.length === 0 ? (
@@ -281,7 +281,7 @@ export default function PublicProjectDetail({
         </div>
       </section>
 
-      <section id="documentos" className="mx-auto max-w-7xl px-6 pb-16 sm:px-8">
+      <section id="documentos" className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
         <div className="space-y-6">
           <h2 className="font-serif text-3xl font-semibold text-neutral-900">Documentos</h2>
           {documents.length === 0 ? (
