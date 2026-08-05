@@ -28,6 +28,7 @@ export default function AdminSidebarClient({
     }, []);
 
     const canManageProjects = isAdmin || isAdminLimit;
+    const canManageNews = isAdmin || isAdminLimit;
 
     return (
         <>
@@ -79,6 +80,12 @@ export default function AdminSidebarClient({
                                 <Link href="/admin/proyectos"
                                     className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
                                     Proyectos
+                                </Link>
+                            )}
+                            {canManageNews && (
+                                <Link href="/admin/novedades"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Novedades
                                 </Link>
                             )}
 
@@ -161,6 +168,16 @@ export default function AdminSidebarClient({
                                         className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-900" : ""}`}
                                     >
                                         Proyectos
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageNews && (
+                                <li>
+                                    <Link
+                                        href="/admin/novedades"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Novedades
                                     </Link>
                                 </li>
                             )}
