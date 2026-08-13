@@ -48,6 +48,13 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (!success) return;
+
+    const timeout = window.setTimeout(() => setSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [success]);
+
   const invalidImageUrl = isInvalidImageUrl(form.imageUrl);
   const canSave = (Boolean(form.mediaAssetId) || Boolean(form.imageUrl.trim())) && !invalidImageUrl;
 
@@ -263,10 +270,10 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
 
       {(error || success) && (
         <div
-          className={`mt-4 rounded-xl border p-4 text-sm ${
+          className={`fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
             error
-              ? "border-red-800 bg-red-950/40 text-red-200"
-              : "border-green-800 bg-green-950/40 text-green-200"
+              ? "border-red-800 bg-red-950/95 text-red-200"
+              : "border-green-800 bg-green-950/95 text-green-200"
           }`}
         >
           {error || success}

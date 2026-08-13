@@ -29,6 +29,7 @@ export default function AdminSidebarClient({
 
     const canManageProjects = isAdmin || isAdminLimit;
     const canManageNews = isAdmin || isAdminLimit;
+    const isNewsPath = pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") || pathname === "/admin/novedades-ia";
 
     return (
         <>
@@ -84,7 +85,7 @@ export default function AdminSidebarClient({
                             )}
                             {canManageNews && (
                                 <Link href="/admin/novedades"
-                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
                                     Novedades
                                 </Link>
                             )}
@@ -92,7 +93,7 @@ export default function AdminSidebarClient({
                         </div>
                     </div>
                     {/* <main className="col-span-12 px-4 min-w-0"> */}
-                    <main className="col-span-12 px-2 min-w-0">
+                    <main className="col-span-12 px-0 md:px-2 min-w-0">
                         {children}
                     </main>
                 </div>
@@ -175,7 +176,7 @@ export default function AdminSidebarClient({
                                 <li>
                                     <Link
                                         href="/admin/novedades"
-                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") ? "bg-neutral-900" : ""}`}
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-900" : ""}`}
                                     >
                                         Novedades
                                     </Link>
