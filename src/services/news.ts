@@ -1,10 +1,16 @@
 import type {
   CreateNewsInput,
+  GeneratedNewsDraft,
+  GenerateNewsInput,
+  GenerateNewsSocialInput,
   News,
   NewsImage,
   NewsImageInput,
   NewsMediaAsset,
+  NewsSocialContent,
+  NewsSocialContentInput,
   NewsStatus,
+  SocialPlatform,
   UpdateNewsInput,
 } from "@/types/news";
 
@@ -64,6 +70,16 @@ export async function createNews(input: CreateNewsInput): Promise<News> {
   });
 
   return parseJson<News>(res);
+}
+
+export async function generateNewsDraft(input: GenerateNewsInput): Promise<GeneratedNewsDraft> {
+  const res = await fetch("/api/admin/news/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<GeneratedNewsDraft>(res);
 }
 
 export async function getAdminNews(id: string): Promise<News> {
@@ -161,6 +177,39 @@ export async function deleteNewsImage(newsId: string, imageId: string): Promise<
           : `Error ${res.status}`;
     throw new Error(message);
   }
+}
+
+export async function listNewsSocialContents(newsId: string): Promise<NewsSocialContent[]> {
+  const res = await fetch(`/api/admin/news/${newsId}/social`, { cache: "no-store" });
+  return parseJson<NewsSocialContent[]>(res);
+}
+
+export async function generateNewsSocialContent(
+  newsId: string,
+  platform: SocialPlatform,
+  input: GenerateNewsSocialInput
+): Promise<NewsSocialContent> {
+  const res = await fetch(`/api/admin/news/${newsId}/social/${platform}/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<NewsSocialContent>(res);
+}
+
+export async function saveNewsSocialContent(
+  newsId: string,
+  platform: SocialPlatform,
+  input: NewsSocialContentInput
+): Promise<NewsSocialContent> {
+  const res = await fetch(`/api/admin/news/${newsId}/social/${platform}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<NewsSocialContent>(res);
 }
 
 export async function listPublicNews(): Promise<News[]> {

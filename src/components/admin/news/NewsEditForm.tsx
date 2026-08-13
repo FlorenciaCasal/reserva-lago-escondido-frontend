@@ -4,6 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Save, Upload } from "lucide-react";
 import NewsGalleryManager from "@/components/admin/news/NewsGalleryManager";
+import NewsSocialManager from "@/components/admin/news/NewsSocialManager";
+import NewsWebPreview from "@/components/admin/news/NewsWebPreview";
 import { createNews, getAdminNews, updateNews, uploadNewsImage, uploadNewsVideo } from "@/services/news";
 import type { News, NewsStatus, UpdateNewsInput } from "@/types/news";
 
@@ -73,6 +75,13 @@ export default function NewsEditForm({ newsId }: Props) {
   const [form, setForm] = React.useState<UpdateNewsInput>(emptyForm);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!success) return;
+
+    const timeout = window.setTimeout(() => setSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [success]);
 
   React.useEffect(() => {
     if (!newsId) return;
@@ -180,6 +189,12 @@ export default function NewsEditForm({ newsId }: Props) {
     }
   }
 
+  function clearMainImage() {
+    setField("imageUrl", "");
+    setField("imageAssetId", null);
+    setSuccess("Imagen principal quitada. Guarda la novedad para confirmar el cambio.");
+  }
+
   async function onVideoFileChange(file?: File) {
     if (!file) return;
 
@@ -236,10 +251,10 @@ export default function NewsEditForm({ newsId }: Props) {
 
       {(error || success) && (
         <div
-          className={`rounded-xl border p-4 text-sm ${
+          className={`fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
             error
-              ? "border-red-800 bg-red-950/40 text-red-200"
-              : "border-green-800 bg-green-950/40 text-green-200"
+              ? "border-red-800 bg-red-950/95 text-red-200"
+              : "border-green-800 bg-green-950/95 text-green-200"
           }`}
         >
           {error || success}
@@ -325,7 +340,7 @@ export default function NewsEditForm({ newsId }: Props) {
               Multimedia
             </h2>
             <div className="mt-4 space-y-5">
-              <label className="block space-y-1">
+              <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
                   Imagen principal
                 </span>
@@ -333,32 +348,17 @@ export default function NewsEditForm({ newsId }: Props) {
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   disabled={saving || uploadingImage || uploadingVideo}
-                  className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
+                  className="sr-only"
                   onChange={(event) => onMainImageFileChange(event.target.files?.[0])}
                 />
+                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage || uploadingVideo}>
+                  {imageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
+                </span>
                 {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
-              </label>
-
-              <details className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-                <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                  URL manual de imagen
-                </summary>
-                <input
-                  className={`${inputClass} mt-3`}
-                  value={form.imageUrl ?? ""}
-                  disabled={saving || uploadingImage || uploadingVideo}
-                  placeholder="/img/novedad.jpg"
-                  onChange={(event) => {
-                    setField("imageUrl", event.target.value);
-                    setField("imageAssetId", null);
-                  }}
-                />
-                {invalidImageUrl && (
-                  <p className="mt-2 text-xs leading-5 text-yellow">
-                    Usa /img/... o una URL http(s). No se permiten rutas C:\.
-                  </p>
+                {imageUrl && (
+                  <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearMainImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
                 )}
-              </details>
+              </label>
 
               {imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -418,6 +418,16 @@ export default function NewsEditForm({ newsId }: Props) {
         </aside>
       </div>
 
+      <NewsWebPreview
+        title={form.title}
+        summary={form.summary}
+        content={form.content}
+        slug={form.slug}
+        imageUrl={imageUrl}
+        videoUrl={videoUrl}
+        images={news?.images ?? []}
+      />
+
       <div className="flex flex-wrap gap-2 text-xs text-neutral-400">
         <span className="inline-flex items-center gap-1">
           {currentStatus === "PUBLISHED" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
@@ -434,10 +444,8 @@ export default function NewsEditForm({ newsId }: Props) {
 
       {news && (
         <>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950/70 p-4 text-sm leading-6 text-neutral-300">
-            La preparacion con IA y los borradores para redes quedan para el siguiente bloque.
-          </div>
           <NewsGalleryManager newsId={news.id} />
+          <NewsSocialManager news={news} />
         </>
       )}
 

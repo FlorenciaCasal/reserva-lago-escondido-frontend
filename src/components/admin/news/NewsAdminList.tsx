@@ -81,13 +81,15 @@ export default function NewsAdminList() {
             Gestiona publicaciones, imagen principal, galeria y estado editorial.
           </p>
         </div>
-        <Link
-          href="/admin/novedades/nueva"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
-        >
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-          Crear novedad
-        </Link>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link
+            href="/admin/novedades-ia"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            Crear novedad
+          </Link>
+        </div>
       </header>
 
       <section className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
@@ -112,7 +114,7 @@ export default function NewsAdminList() {
       </section>
 
       {error && (
-        <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
+        <div className="fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-red-800 bg-red-950/95 p-4 text-sm text-red-200 shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl">
           {error}
         </div>
       )}
@@ -124,13 +126,13 @@ export default function NewsAdminList() {
           <p className="p-4 text-sm text-neutral-400">No hay novedades para mostrar.</p>
         ) : (
           <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[760px] table-fixed text-left text-sm">
+            <table className="w-full min-w-[700px] table-fixed text-left text-sm">
               <thead className="border-b border-neutral-800 bg-neutral-900 text-neutral-400">
                 <tr>
-                  <th className="w-[48%] px-4 py-3">Novedad</th>
-                  <th className="w-[16%] px-4 py-3">Estado</th>
-                  <th className="w-[16%] px-4 py-3">Publicado</th>
-                  <th className="w-[20%] px-4 py-3 text-right">Acciones</th>
+                  <th className="w-[44%] px-3 py-3 sm:px-4">Novedad</th>
+                  <th className="w-[16%] px-3 py-3 sm:px-4">Estado</th>
+                  <th className="w-[14%] px-3 py-3 sm:px-4">Publicado</th>
+                  <th className="w-[18%] px-3 py-3 text-right sm:px-4">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -138,8 +140,8 @@ export default function NewsAdminList() {
                   const busy = savingId === item.id;
                   return (
                     <tr key={item.id} className="border-b border-neutral-800 last:border-0">
-                      <td className="px-4 py-3">
-                        <div className="flex min-w-0 items-center gap-3">
+                      <td className="px-3 py-3 sm:px-4">
+                        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                           {item.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={item.imageUrl} alt={item.title} className="h-12 w-12 shrink-0 rounded-md object-cover" />
@@ -152,14 +154,14 @@ export default function NewsAdminList() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-3 sm:px-4">
                         <span className={`rounded-full border px-2 py-1 text-xs ${statusClass(item.status)}`}>
                           {statusLabel(item.status)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-neutral-300">{fmtDate(item.publishedAt)}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
+                      <td className="px-3 py-3 text-neutral-300 sm:px-4">{fmtDate(item.publishedAt)}</td>
+                      <td className="px-3 py-3 sm:px-4">
+                        <div className="flex justify-end gap-1.5 sm:gap-2">
                           <Link
                             href={`/admin/novedades/${item.id}/editar`}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
