@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { Leaf, Mountain, Sprout } from "lucide-react";
 
 const pillars = [
   {
     title: "Preservar",
+    href: "/preservar",
     icon: Leaf,
     tone: "bg-[#EEF6ED]",
     text: "Conservamos la naturaleza a partir de proyectos y monitoreos constantes del ecosistema.",
@@ -10,6 +12,7 @@ const pillars = [
   },
   {
     title: "Producir",
+    href: "/producir",
     icon: Sprout,
     tone: "bg-[#F6F1E6]",
     text: "Desarrollamos actividades productivas sustentables que conviven con la proteccion del territorio.",
@@ -17,6 +20,7 @@ const pillars = [
   },
   {
     title: "Vivir y disfrutar",
+    href: "/vivir-y-disfrutar",
     icon: Mountain,
     tone: "bg-[#EEF3F5]",
     text: "Invitamos a vivir experiencias de bajo impacto para conocer y valorar la reserva.",
@@ -37,8 +41,9 @@ export default function HomePillars() {
             const Icon = pillar.icon;
 
             return (
-              <article
+              <Link
                 key={pillar.title}
+                href={pillar.href}
                 className={`${pillar.tone} flex min-h-[330px] flex-col items-center rounded-sm px-8 py-9 text-center`}
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-primary shadow-sm">
@@ -61,7 +66,7 @@ export default function HomePillars() {
                 <span className="mt-auto pt-7 text-xs font-bold uppercase tracking-[0.16em] text-primary">
                   Conoce mas
                 </span>
-              </article>
+              </Link>
             );
           })}
         </div>
