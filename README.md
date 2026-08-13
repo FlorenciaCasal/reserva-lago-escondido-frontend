@@ -102,3 +102,14 @@ No es necesario importarlo ni llamarlo manualmente.
   - Si es `false`, funciona normalmente.
 
 - > Nota: el modo mantenimiento se activa de forma manual (no cambia automáticamente).
+
+
+
+
+instagram:
+Crear una nueva publicación en Instagram y seleccionar la foto.
+En el texto de la publicación, pegar el Caption.
+Debajo agregar el CTA.
+Al final agregar los Hashtags con #.
+En las opciones de accesibilidad de Instagram, cargar el Texto alternativo.
+Revisar todo y publicar.
