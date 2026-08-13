@@ -340,6 +340,18 @@ export async function listPublicProjects(): Promise<Project[]> {
   }
 }
 
+export async function listPublicProjectsCmsOnly(): Promise<Project[]> {
+  try {
+    const res = await fetchWithTimeout(`${API_URL}/api/projects`, { cache: "no-store" });
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    return Array.isArray(data) ? sortPublicProjects(data as Project[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getPublicProjectBySlug(slug: string): Promise<Project | null> {
   try {
     const res = await fetchWithTimeout(`${API_URL}/api/projects/${encodeURIComponent(slug)}`, {
