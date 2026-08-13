@@ -68,6 +68,13 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
   const [success, setSuccess] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    if (!success) return;
+
+    const timeout = window.setTimeout(() => setSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [success]);
+
+  React.useEffect(() => {
     listAdminProjectAdvances(projectId)
       .then(setAdvances)
       .catch(() => setError("No se pudieron cargar los avances del proyecto."))
@@ -252,7 +259,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
       </div>
 
       {(error || success) && (
-        <div className={`mt-4 rounded-xl border p-4 text-sm ${error ? "border-red-800 bg-red-950/40 text-red-200" : "border-green-800 bg-green-950/40 text-green-200"}`}>
+        <div className={`fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${error ? "border-red-800 bg-red-950/95 text-red-200" : "border-green-800 bg-green-950/95 text-green-200"}`}>
           {error || success}
         </div>
       )}

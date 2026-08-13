@@ -32,6 +32,13 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
   const [success, setSuccess] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    if (!success) return;
+
+    const timeout = window.setTimeout(() => setSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [success]);
+
+  React.useEffect(() => {
     listAdminNewsImages(newsId)
       .then(setImages)
       .catch(() => setError("No se pudo cargar la galeria."))
@@ -143,10 +150,10 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
 
       {(error || success) && (
         <div
-          className={`mt-4 rounded-xl border p-4 text-sm ${
+          className={`fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
             error
-              ? "border-red-800 bg-red-950/40 text-red-200"
-              : "border-green-800 bg-green-950/40 text-green-200"
+              ? "border-red-800 bg-red-950/95 text-red-200"
+              : "border-green-800 bg-green-950/95 text-green-200"
           }`}
         >
           {error || success}
@@ -214,19 +221,6 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
                 disabled={saving}
                 className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
                 onChange={(event) => onUpload(event.target.files?.[0])}
-              />
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                URL de imagen
-              </span>
-              <input
-                className={inputClass}
-                value={form.imageUrl}
-                disabled={saving}
-                placeholder="/api/media/..."
-                onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value, mediaAssetId: null }))}
               />
             </label>
 

@@ -4,6 +4,11 @@ import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import type { Project } from "@/types/project";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const PROJECTS_DROPDOWN_LIMIT = 8;
 
 export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLogged: boolean; isAdmin: boolean; isAdminLimit: boolean }) {
   const pathname = usePathname();
@@ -15,17 +20,48 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
   const isReservas = pathname == "/admin/reservas";
   const isUsuarios = pathname == "/admin/usuarios";
   const isProjectsPage = pathname === "/proyectos" || pathname.startsWith("/proyectos/");
+  const isNewsPage = pathname === "/novedades" || pathname.startsWith("/novedades/");
   const canAccessAdmin = isLogged && (isAdmin || isAdminLimit);
 
   // 👇 rutas donde NO queremos mostrar el navbar
   const HIDE_ON: string[] = ["/politicas-de-visita"];
+  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [publicProjects, setPublicProjects] = useState<Project[]>([]);
+  const [projectsLoaded, setProjectsLoaded] = useState(false);
 
   const [open, setOpen] = useState(false); // ← menú mobile
 
   // cerrar drawer al cambiar de ruta
   useEffect(() => {
     setOpen(false);
+    setProjectsOpen(false);
   }, [pathname]);
+
+  async function loadPublicProjects() {
+    if (projectsLoaded) return;
+
+    setProjectsLoaded(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/projects`, { cache: "no-store" });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (!Array.isArray(data)) return;
+
+      setPublicProjects(
+        data
+          .filter((project: Project) => project.status === "PUBLISHED")
+          .sort((a: Project, b: Project) => {
+            const aDate = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+            const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+            return bDate - aDate;
+          })
+      );
+    } catch {
+      setPublicProjects([]);
+    }
+  }
 
   // return condicional DESPUÉS de hooks
   if (HIDE_ON.includes(pathname)) return null;
@@ -59,8 +95,47 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </Link>
               {/* NAV PÚBLICO (placeholders) */}
               <div className="hidden sm:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
-                <Link href="/proyectos" className="hover:text-secondary-dark transition">
-                  PROYECTOS
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    setProjectsOpen(true);
+                    void loadPublicProjects();
+                  }}
+                  onMouseLeave={() => setProjectsOpen(false)}
+                >
+                  <Link href="/proyectos" className="inline-flex items-center gap-1 hover:text-secondary-dark transition">
+                    PROYECTOS
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${projectsOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+
+                  {projectsOpen && publicProjects.length > 0 && (
+                    <div className="absolute left-0 top-full z-50 min-w-64 pt-3">
+                      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white text-primary shadow-xl shadow-black/10">
+                        <div className="max-h-80 overflow-y-auto py-2">
+                          {publicProjects.slice(0, PROJECTS_DROPDOWN_LIMIT).map((project) => (
+                            <Link
+                              key={project.id}
+                              href={`/proyectos/${project.slug}`}
+                              className="block px-4 py-2.5 text-sm leading-5 transition hover:bg-neutral-100 hover:text-secondary-dark"
+                            >
+                              {project.title}
+                            </Link>
+                          ))}
+                          {publicProjects.length > PROJECTS_DROPDOWN_LIMIT && (
+                            <Link
+                              href="/proyectos"
+                              className="block border-t border-neutral-100 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 hover:text-secondary-dark"
+                            >
+                              Ver todos los proyectos
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Link href="/novedades" className="hover:text-secondary-dark transition">
+                  NOVEDADES
                 </Link>
                 {/* <span className="cursor-default">CONTACTO</span> */}
                 <Link href="/#footer" className="hover:text-secondary-dark transition">
@@ -73,7 +148,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
             {/* ===== DERECHA: ACCIONES ===== */}
             <div className="hidden sm:flex items-center gap-4 text-sm">
 
-              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage) && canAccessAdmin && (
+              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage || isNewsPage) && canAccessAdmin && (
                 <Link
                   href="/admin"
                   className="text-primary hover:text-secondary-dark transition pl-4"
@@ -193,7 +268,34 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </li>
             )}
 
-            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage) && canAccessAdmin && (
+            <li>
+              <Link
+                href="/proyectos"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Proyectos
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/novedades"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Novedades
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/#footer"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Contacto
+              </Link>
+            </li>
+
+            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage || isNewsPage) && canAccessAdmin && (
               <li>
                 <Link
                   href="/admin"

@@ -68,26 +68,26 @@ export default function Footer() {
   if (HIDE_ON.includes(pathname)) return null;
 
   return (
-    <footer id="footer" className="w-full scroll-mt-24 bg-primary text-white">
-      <div className="mx-auto max-w-6xl px-2 py-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-[1.3fr_1fr_1fr] sm:items-start">
-          <div>
+    <footer id="footer" className="w-full scroll-mt-24 bg-teal-950 text-white">
+      <div className="mx-auto max-w-6xl px-3 py-5 sm:px-2 sm:py-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_1fr_1fr] sm:items-start sm:gap-8">
+          <div className="sm:justify-self-start">
             <Link href="/" aria-label="Ir al inicio">
               <Image
-                src="/img/logoReserva.png"
+                src="/img/logo1.png" 
                 alt="Reserva Natural Lago Escondido"
                 width={140}
                 height={48}
-                className="h-auto w-32 brightness-0 invert"
+                className="h-auto w-24 brightness-0 invert sm:w-32"
               />
             </Link>
           </div>
 
-          <div>
-            <h4 className="mb-3 text-xs tracking-wide opacity-90 md:text-sm">
+          <div className="sm:justify-self-center">
+            <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
               CONTACTO
             </h4>
-            <div className="space-y-2 text-xs leading-relaxed opacity-85 md:text-sm">
+            <div className="space-y-1.5 text-xs leading-relaxed opacity-85 sm:space-y-2 md:text-sm">
               <a href="mailto:info@reservalagoescondido.com.ar" className="flex items-start gap-2 break-all hover:underline">
                 <EmailIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
                 <span>info@reservalagoescondido.com.ar</span>
@@ -99,11 +99,11 @@ export default function Footer() {
             </div>
           </div>
 
-          <div>
-            <h4 className="mb-3 text-xs tracking-wide opacity-90 md:text-sm">
+          <div className="sm:justify-self-end sm:text-right">
+            <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
               SEGUINOS
             </h4>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 sm:justify-end">
               <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <InstagramIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
               </Link>
@@ -115,10 +115,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/20 pt-5">
-          <div className="flex flex-col gap-3 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 border-t border-white/20 pt-3 sm:mt-8 sm:pt-5">
+          <div className="flex flex-col gap-2 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <p>© 2026 Reserva Natural Lago Escondido. Todos los derechos reservados.</p>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-6 sm:gap-y-2">
               <a href="#" className="transition hover:text-white">
                 Términos y condiciones
               </a>

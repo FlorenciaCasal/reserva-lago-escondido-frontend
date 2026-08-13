@@ -137,7 +137,7 @@ export default function ProjectAdminList() {
       </section>
 
       {error && (
-        <div className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
+        <div className="fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-red-800 bg-red-950/95 p-4 text-sm text-red-200 shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl">
           {error}
         </div>
       )}

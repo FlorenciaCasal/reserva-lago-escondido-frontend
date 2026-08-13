@@ -170,6 +170,13 @@ export default function ProjectAiForm() {
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (!success) return;
+
+    const timeout = window.setTimeout(() => setSuccess(null), 3500);
+    return () => window.clearTimeout(timeout);
+  }, [success]);
+
   const activeDraft = draft ?? emptyDraft;
   const customObjectiveSelected = selectedObjectiveOptions.includes(customObjectiveOption);
   const customTargetAudienceSelected = selectedTargetAudiences.includes(customTargetAudienceOption);
@@ -205,7 +212,6 @@ export default function ProjectAiForm() {
   const busy = generating || saving;
   const inputImageUrl = getPublicImageUrl(input.imageUrl);
   const draftImageUrl = getPublicImageUrl(activeDraft.imageUrl);
-  const hasInvalidInputImageUrl = Boolean(input.imageUrl?.trim()) && !inputImageUrl;
   const galleryImageUrl = getGalleryImageUrl(galleryForm.imageUrl);
   const hasInvalidGalleryImageUrl = Boolean(galleryForm.imageUrl?.trim()) && !galleryImageUrl;
   const hasInvalidSavedGalleryImage = galleryImages.some(
@@ -544,10 +550,10 @@ export default function ProjectAiForm() {
     <div className="space-y-5">
       {(error || success) && (
         <div
-          className={`flex items-start gap-3 rounded-xl border p-4 text-sm ${
+          className={`fixed left-1/2 top-16 z-50 flex w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 items-start gap-3 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
             error
-              ? "border-red-800 bg-red-950/40 text-red-200"
-              : "border-green-800 bg-green-950/40 text-green-200"
+              ? "border-red-800 bg-red-950/95 text-red-200"
+              : "border-green-800 bg-green-950/95 text-green-200"
           }`}
         >
           {!error && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
@@ -718,47 +724,25 @@ export default function ProjectAiForm() {
             </details>
 
 
-            <label className="block space-y-1">
+            <label className="block space-y-2">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                {inputImageUrl ? "Cambiar imagen principal" : "Seleccionar imagen principal"}
+                Imagen principal
               </span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 disabled={busy || uploadingMainImage}
-                className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
+                className="sr-only"
                 onChange={(event) => onInputImageFileChange(event.target.files?.[0])}
               />
+              <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={busy || uploadingMainImage}>
+                {inputImageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
+              </span>
               {uploadingMainImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
               {inputImageUrl && (
-                <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
-                  <span>Imagen actual: se reemplazara si elegis otro archivo.</span>
-                  <button type="button" disabled={busy || uploadingMainImage} onClick={clearInputImage} className="font-semibold text-red-300 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
-                </div>
+                <button type="button" disabled={busy || uploadingMainImage} onClick={clearInputImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
               )}
             </label>
-            <details className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
-              <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                URL manual de imagen
-              </summary>
-              <label className="mt-3 block space-y-1">
-                <input
-                  className={inputClass}
-                  disabled={busy}
-                  value={input.imageUrl ?? ""}
-                  placeholder="/img/alerces.jpg"
-                  onChange={(event) => {
-                    setInput({ ...input, imageUrl: event.target.value });
-                    setInputImageAssetId(null);
-                  }}
-                />
-                {hasInvalidInputImageUrl && (
-                  <p className="text-xs leading-5 text-yellow">
-                    Usa una ruta publica como /img/alerces.jpg, /api/media/... o una URL https://. Las rutas C:\ no se pueden cargar desde el navegador.
-                  </p>
-                )}
-              </label>
-            </details>
 
           </div>
 
