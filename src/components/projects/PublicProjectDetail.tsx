@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type React from "react";
 import ProjectDetailTabs from "@/components/projects/ProjectDetailTabs";
+import RevealOnView from "@/components/ui/RevealOnView";
 import type { Project, ProjectAdvance } from "@/types/project";
 
 function PlaceholderCard({
@@ -93,6 +94,7 @@ export default function PublicProjectDetail({
   const documents = project.documents ?? [];
   const projectTitle = repairMojibake(project.title);
   const projectSummary = repairMojibake(project.summary);
+  const hasProjectVideo = Boolean(project.videoUrl?.trim());
 
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
@@ -105,40 +107,60 @@ export default function PublicProjectDetail({
           <span className="text-neutral-700">{projectTitle}</span>
         </nav>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(360px,1.08fr)] lg:items-center">
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-950 sm:text-[40px]">
-                {projectTitle}
-              </h1>
-              <p className="mt-5 max-w-xl text-lg font-medium leading-8 text-neutral-700">
-                {projectSummary}
-              </p>
+        <RevealOnView className="[&:not(.opacity-100)]:translate-y-4" delay={100}>
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(360px,1.08fr)] lg:items-center">
+            <div className="space-y-6">
+              <div>
+                <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-950 sm:text-[40px]">
+                  {projectTitle}
+                </h1>
+                <p className="mt-5 max-w-xl text-lg font-medium leading-8 text-neutral-700">
+                  {projectSummary}
+                </p>
+              </div>
+
+              {project.featured && (
+                <span className="inline-flex rounded-full bg-[#EEF6ED] px-6 py-2 text-sm font-semibold uppercase tracking-wide text-[#5D8259]">
+                  Proyecto destacado
+                </span>
+              )}
+
             </div>
 
-            {project.featured && (
-              <span className="inline-flex rounded-full bg-[#EEF6ED] px-6 py-2 text-sm font-semibold uppercase tracking-wide text-[#5D8259]">
-                Proyecto destacado
-              </span>
-            )}
-
-          </div>
-
-          <div className="overflow-hidden rounded-[18px] shadow-[0_22px_54px_-34px_rgba(15,23,42,0.48)]">
-            {project.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={project.imageUrl}
-                alt={projectTitle}
-                className="aspect-[16/10] w-full object-cover"
-              />
-            ) : (
-              <div className="flex aspect-[16/10] w-full items-center justify-center bg-neutral-100 px-8 text-center text-sm font-medium uppercase tracking-wide text-neutral-400">
-                Sin imagen principal
+            <div className="overflow-hidden rounded-[18px] shadow-[0_22px_54px_-34px_rgba(15,23,42,0.48)]">
+              {hasProjectVideo && project.videoUrl ? (
+                isUploadedVideo(project.videoUrl, project.videoAssetId) ? (
+                  <video
+                    src={project.videoUrl}
+                    controls
+                    preload="metadata"
+                    className="aspect-[16/10] w-full bg-black object-contain"
+                  />
+                ) : (
+                  <a
+                    href={project.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex aspect-[16/10] w-full items-center justify-center bg-neutral-100 px-8 text-center text-sm font-semibold uppercase tracking-wide text-neutral-500 transition hover:bg-neutral-200"
+                  >
+                    Ver video principal
+                  </a>
+                )
+              ) : project.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={project.imageUrl}
+                  alt={projectTitle}
+                  className="aspect-[16/10] w-full object-cover"
+                />
+              ) : (
+                <div className="flex aspect-[16/10] w-full items-center justify-center bg-neutral-100 px-8 text-center text-sm font-medium uppercase tracking-wide text-neutral-400">
+                  Sin imagen principal
+                </div>
+              )}
+            </div>
               </div>
-            )}
-          </div>
-        </div>
+        </RevealOnView>
       </section>
 
       <section className="border-y border-neutral-200 bg-[#FAFAF9]">
@@ -148,29 +170,29 @@ export default function PublicProjectDetail({
       </section>
 
       <section id="descripcion" className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-14">
-        <div className="max-w-3xl">
+        <RevealOnView className="max-w-3xl [&:not(.opacity-100)]:translate-y-4" delay={120}>
           <article>
-            <h2 className="font-serif text-3xl font-semibold text-neutral-900">Descripcion</h2>
-            <div className="mt-6 whitespace-pre-wrap text-[17px] font-normal leading-9 text-neutral-700">
+            <h2 className="font-serif text-3xl font-semibold text-neutral-900">Descripción</h2>
+            <div className="mt-6 whitespace-pre-wrap text-sm font-normal leading-7 text-neutral-700 md:text-base md:leading-8 lg:text-lg lg:leading-9">
               {renderLinkedText(project.content)}
             </div>
           </article>
-        </div>
+        </RevealOnView>
       </section>
 
       <section id="avances" className="mx-auto max-w-7xl px-4 py-4 sm:px-8">
-        <div className="space-y-6">
+        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
           <div>
             <h2 className="font-serif text-3xl font-semibold text-neutral-900">Avances del proyecto</h2>
             <p className="mt-4 max-w-3xl text-base leading-8 text-neutral-700 sm:text-[17px]">
-              Seguimiento cronologico de los principales hitos y acciones realizadas en el marco de este proyecto.
+              Seguimiento cronológico de los principales hitos y acciones realizadas en el marco de este proyecto.
             </p>
           </div>
 
           {advances.length === 0 ? (
             <PlaceholderCard
-              title="Todavia no hay avances publicados"
-              text="Cuando el proyecto comparta sus primeros hitos, esta linea de tiempo mostrara cada avance con fecha, descripcion y recursos asociados."
+              title="Todavía no hay avances publicados"
+              text="Cuando el proyecto comparta sus primeros hitos, esta línea de tiempo mostrará cada avance con fecha, descripción y recursos asociados."
             />
           ) : (
             <div className="relative space-y-8 pl-7 sm:space-y-10 sm:pl-14">
@@ -237,16 +259,16 @@ export default function PublicProjectDetail({
               })}
             </div>
           )}
-        </div>
+        </RevealOnView>
       </section>
 
       <section id="galeria" className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
-        <div className="space-y-6">
+        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={120}>
           <h2 className="font-serif text-3xl font-semibold text-neutral-900">Galeria</h2>
           {gallery.length === 0 ? (
             <PlaceholderCard
-              title="Todavia no hay imagenes en la galeria"
-              text="Cuando se publiquen imagenes asociadas a este proyecto, se mostraran aqui como registro visual de sus acciones y avances."
+              title="Todavia no hay imágenes en la galeria"
+              text="Cuando se publiquen imágenes asociadas a este proyecto, se mostrarán aqui como registro visual de sus acciones y avances."
             />
           ) : (
             <div className="grid gap-5 md:grid-cols-3">
@@ -260,13 +282,13 @@ export default function PublicProjectDetail({
                 return (
                   <figure
                     key={image.id}
-                    className="overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)]"
+                    className="group overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)] transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.42)]"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={image.imageUrl}
                       alt={imageAlt}
-                      className="aspect-video w-full object-cover"
+                      className="aspect-video w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
                     />
                     {imageCaption && (
                       <figcaption className="px-4 py-3 text-sm leading-6 text-neutral-700">
@@ -278,23 +300,23 @@ export default function PublicProjectDetail({
               })}
             </div>
           )}
-        </div>
+        </RevealOnView>
       </section>
 
       <section id="documentos" className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
-        <div className="space-y-6">
+        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
           <h2 className="font-serif text-3xl font-semibold text-neutral-900">Documentos</h2>
           {documents.length === 0 ? (
             <PlaceholderCard
-              title="Todavia no hay documentos publicados"
-              text="Cuando se publiquen fichas tecnicas, informes o materiales de apoyo, se mostraran en esta seccion."
+              title="Todavía no hay documentos publicados"
+              text="Cuando se publiquen fichas técnicas, informes o materiales de apoyo, se mostrarán en esta sección."
             />
           ) : (
             <div className="grid min-w-0 gap-4 md:grid-cols-2">
               {documents.map((document) => (
                 <article
                   key={document.id}
-                  className="min-w-0 rounded-[14px] border border-neutral-200 bg-white p-6 shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)]"
+                  className="min-w-0 rounded-[14px] border border-neutral-200 bg-white p-6 shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)] transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -325,7 +347,7 @@ export default function PublicProjectDetail({
               ))}
             </div>
           )}
-        </div>
+        </RevealOnView>
       </section>
     </main>
   );

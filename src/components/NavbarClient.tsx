@@ -12,22 +12,14 @@ const PROJECTS_DROPDOWN_LIMIT = 8;
 
 export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLogged: boolean; isAdmin: boolean; isAdminLimit: boolean }) {
   const pathname = usePathname();
-  const isHome = pathname == "/";
   const showHomeLink = pathname !== "/";
-  const isVisitas = pathname == "/visitas";
   const showVisitasLink = pathname !== "/visitas";
-  const isCalendario = pathname == "/admin/calendario";
-  const isReservas = pathname == "/admin/reservas";
-  const isUsuarios = pathname == "/admin/usuarios";
-  const isProjectsPage = pathname === "/proyectos" || pathname.startsWith("/proyectos/");
-  const isNewsPage = pathname === "/novedades" || pathname.startsWith("/novedades/");
   const canAccessAdmin = isLogged && (isAdmin || isAdminLimit);
 
   // 👇 rutas donde NO queremos mostrar el navbar
   const HIDE_ON: string[] = ["/politicas-de-visita"];
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [publicProjects, setPublicProjects] = useState<Project[]>([]);
-  const [projectsLoaded, setProjectsLoaded] = useState(false);
 
   const [open, setOpen] = useState(false); // ← menú mobile
 
@@ -38,10 +30,6 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
   }, [pathname]);
 
   async function loadPublicProjects() {
-    if (projectsLoaded) return;
-
-    setProjectsLoaded(true);
-
     try {
       const response = await fetch(`${API_URL}/api/projects`, { cache: "no-store" });
       if (!response.ok) return;
@@ -53,16 +41,21 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
         data
           .filter((project: Project) => project.status === "PUBLISHED")
           .sort((a: Project, b: Project) => {
-            const aDate = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-            const bDate = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-            return bDate - aDate;
+            if (a.featured !== b.featured) return a.featured ? -1 : 1;
+
+            const aPublishedAt = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+            const bPublishedAt = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+            if (aPublishedAt !== bPublishedAt) return bPublishedAt - aPublishedAt;
+
+            const aCreatedAt = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bCreatedAt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bCreatedAt - aCreatedAt;
           })
       );
     } catch {
       setPublicProjects([]);
     }
   }
-
   // return condicional DESPUÉS de hooks
   if (HIDE_ON.includes(pathname)) return null;
 
@@ -148,7 +141,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
             {/* ===== DERECHA: ACCIONES ===== */}
             <div className="hidden sm:flex items-center gap-4 text-sm">
 
-              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage || isNewsPage) && canAccessAdmin && (
+              {canAccessAdmin && (
                 <Link
                   href="/admin"
                   className="text-primary hover:text-secondary-dark transition pl-4"
@@ -295,7 +288,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </Link>
             </li>
 
-            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas || isProjectsPage || isNewsPage) && canAccessAdmin && (
+            {canAccessAdmin && (
               <li>
                 <Link
                   href="/admin"

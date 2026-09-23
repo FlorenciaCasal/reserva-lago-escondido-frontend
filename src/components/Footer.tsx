@@ -99,7 +99,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="sm:justify-self-end sm:text-right">
+          <div className="sm:justify-self-end sm:text-right pr-3">
             <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
               SEGUINOS
             </h4>

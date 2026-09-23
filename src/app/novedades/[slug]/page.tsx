@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import StructuredData from "@/components/seo/StructuredData";
 import PublicNewsDetail from "@/components/news/PublicNewsDetail";
 import { getPublicNewsBySlug } from "@/services/news";
+import { newsArticleJsonLd, ogImage, siteUrl } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -17,13 +19,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const canonical = `/novedades/${news.slug}`;
+
   return {
     title: `${news.title} | Reserva Natural Lago Escondido`,
     description: news.summary,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: news.title,
       description: news.summary,
-      images: news.imageUrl ? [{ url: news.imageUrl }] : undefined,
+      url: siteUrl(canonical),
+      images: [ogImage(news.imageUrl)],
       type: "article",
       publishedTime: news.publishedAt ?? undefined,
     },
@@ -36,5 +44,10 @@ export default async function NewsDetailPage({ params }: Props) {
 
   if (!news) notFound();
 
-  return <PublicNewsDetail news={news} />;
+  return (
+    <>
+      <StructuredData data={newsArticleJsonLd(news)} />
+      <PublicNewsDetail news={news} />
+    </>
+  );
 }

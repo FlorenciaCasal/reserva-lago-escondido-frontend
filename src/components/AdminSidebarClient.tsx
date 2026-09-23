@@ -29,7 +29,10 @@ export default function AdminSidebarClient({
 
     const canManageProjects = isAdmin || isAdminLimit;
     const canManageNews = isAdmin || isAdminLimit;
+    const canManagePreserve = isAdmin || isAdminLimit;
+    const canManageHome = isAdmin || isAdminLimit;
     const isNewsPath = pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") || pathname === "/admin/novedades-ia";
+    const isPreservePath = pathname === "/admin/preservar";
 
     return (
         <>
@@ -87,6 +90,18 @@ export default function AdminSidebarClient({
                                 <Link href="/admin/novedades"
                                     className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
                                     Novedades
+                                </Link>
+                            )}
+                            {canManageHome && (
+                                <Link href="/admin/home"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/home" ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Home
+                                </Link>
+                            )}
+                            {canManagePreserve && (
+                                <Link href="/admin/preservar"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${isPreservePath ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Conservar
                                 </Link>
                             )}
 
@@ -179,6 +194,26 @@ export default function AdminSidebarClient({
                                         className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-900" : ""}`}
                                     >
                                         Novedades
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageHome && (
+                                <li>
+                                    <Link
+                                        href="/admin/home"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/home" ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Home
+                                    </Link>
+                                </li>
+                            )}
+                            {canManagePreserve && (
+                                <li>
+                                    <Link
+                                        href="/admin/preservar"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${isPreservePath ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Conservar
                                     </Link>
                                 </li>
                             )}

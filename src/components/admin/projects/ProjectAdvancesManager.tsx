@@ -53,6 +53,22 @@ function formatDate(value: string) {
   });
 }
 
+function compareAdvancesByTimeline(first: ProjectAdvance, second: ProjectAdvance) {
+  const dateCompare = first.advanceDate.localeCompare(second.advanceDate);
+  if (dateCompare !== 0) return dateCompare;
+
+  const firstCreatedAt = first.createdAt ?? "";
+  const secondCreatedAt = second.createdAt ?? "";
+  const createdAtCompare = firstCreatedAt.localeCompare(secondCreatedAt);
+  if (createdAtCompare !== 0) return createdAtCompare;
+
+  return first.id.localeCompare(second.id);
+}
+
+function sortAdvancesByTimeline(advances: ProjectAdvance[]) {
+  return [...advances].sort(compareAdvancesByTimeline);
+}
+
 export default function ProjectAdvancesManager({ projectId }: { projectId: string }) {
   const [advances, setAdvances] = React.useState<ProjectAdvance[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -76,7 +92,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
 
   React.useEffect(() => {
     listAdminProjectAdvances(projectId)
-      .then(setAdvances)
+      .then((items) => setAdvances(sortAdvancesByTimeline(items)))
       .catch(() => setError("No se pudieron cargar los avances del proyecto."))
       .finally(() => setLoading(false));
   }, [projectId]);
@@ -128,14 +144,13 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
         tone: aiBrief.tone.trim() || null,
       });
 
-      setEditingId(null);
       setAiDraftActive(true);
-      setForm({
-        ...emptyForm,
+      setForm((current) => ({
+        ...current,
         advanceDate: draft.advanceDate,
         title: draft.title,
         description: draft.description,
-      });
+      }));
       setSuccess("Borrador de avance generado. Revisalo y guardalo manualmente para publicarlo en la linea de tiempo.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo generar el avance con IA.");
@@ -211,11 +226,11 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
     try {
       if (editingId) {
         const updated = await updateProjectAdvance(projectId, editingId, payload);
-        setAdvances((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+        setAdvances((current) => sortAdvancesByTimeline(current.map((item) => (item.id === updated.id ? updated : item))));
         setSuccess("Avance actualizado correctamente.");
       } else {
         const created = await createProjectAdvance(projectId, payload);
-        setAdvances((current) => [created, ...current]);
+        setAdvances((current) => sortAdvancesByTimeline([...current, created]));
         setSuccess("Avance creado correctamente.");
       }
       resetForm();
@@ -250,7 +265,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-white">Avances del proyecto</h2>
-          <p className="mt-1 text-sm text-neutral-400">Gestiona la linea de tiempo publica con fecha, descripcion e imagen o video opcional.</p>
+          <p className="mt-1 text-sm text-neutral-400">Gestiona la linea de tiempo publica con fecha, descripción e imagen o video opcional.</p>
         </div>
         <button type="button" onClick={resetForm} className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-800">
           <Plus className="h-4 w-4" />
@@ -297,7 +312,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-light">{editingId ? "Editar avance" : "Crear avance"}</h3>
-              <p className="mt-1 text-sm text-neutral-400">Subi imagen y video desde tu equipo. Las URLs manuales quedan como opcion avanzada.</p>
+              <p className="mt-1 text-sm text-neutral-400">Subi imagen y video desde tu equipo. Las URLs manuales quedan como opción avanzada.</p>
             </div>
             {(editingId || aiDraftActive) && <button type="button" onClick={aiDraftActive ? cancelAiDraft : resetForm} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800" aria-label="Cancelar edicion"><X className="h-4 w-4" /></button>}
           </div>
@@ -314,7 +329,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
               <div className="mt-4 space-y-3">
                 <label className="block space-y-1">
                   <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Que ocurrio</span>
-                  <textarea className={`${inputClass} min-h-24 resize-y leading-relaxed`} value={aiBrief.whatHappened} disabled={saving || generatingAiDraft} placeholder="Ej: Se realizo un monitoreo de ejemplares nativos y se registraron nuevos puntos de regeneracion." onChange={(event) => setAiBrief((current) => ({ ...current, whatHappened: event.target.value }))} />
+                  <textarea className={`${inputClass} min-h-24 resize-y leading-relaxed`} value={aiBrief.whatHappened} disabled={saving || generatingAiDraft} placeholder="Ej: Se realizo un monitoreo de ejemplares nativos y se registraron nuevos puntos de regeneración." onChange={(event) => setAiBrief((current) => ({ ...current, whatHappened: event.target.value }))} />
                 </label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block space-y-1">
@@ -339,22 +354,29 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
 
             {aiDraftActive && (
               <div className="rounded-lg border border-primary/30 bg-neutral-950/70 p-3 text-xs leading-5 text-neutral-300">
-                Borrador IA activo: podes editar fecha, titulo y descripcion antes de guardarlo. Si lo descartas, no se crea ningun avance.
+                Borrador IA activo: podes editar fecha, titulo y descripción antes de guardarlo. Si lo descartas, no se crea ningun avance.
               </div>
             )}
 
             <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Fecha</span><input type="date" className={inputClass} value={form.advanceDate} disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => setForm((current) => ({ ...current, advanceDate: event.target.value }))} /></label>
             <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Titulo</span><input className={inputClass} value={form.title} disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} /></label>
-            <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Descripcion</span><textarea className={`${inputClass} min-h-36 resize-y leading-relaxed`} value={form.description} disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} /></label>
+            <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Descripción</span><textarea className={`${inputClass} min-h-36 resize-y leading-relaxed`} value={form.description} disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} /></label>
 
 
             <label className="block space-y-2 rounded-lg border border-dashed border-neutral-700 p-3 text-sm text-neutral-300">
               <span className="inline-flex items-center gap-2 font-semibold text-neutral-100"><Upload className="h-4 w-4" />{form.imageUrl ? "Cambiar imagen" : "Seleccionar imagen"}</span>
-              <input type="file" accept="image/jpeg,image/png,image/webp" disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => onImageFileChange(event.target.files?.[0])} className="block w-full text-xs text-neutral-400 file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-primary-dark" />
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => onImageFileChange(event.target.files?.[0])} className="block w-full text-xs text-neutral-400 file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-primary-dark" />
               {uploadingImage && <span className="text-xs text-primary-light">Subiendo imagen...</span>}
               {form.imageUrl && (
-                <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
-                  <span>Imagen actual: se reemplazara si elegis otro archivo.</span>
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950/70 p-2 text-xs text-neutral-400">
+                  <div className="h-14 w-20 overflow-hidden rounded-md border border-neutral-700 bg-neutral-900">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.imageUrl} alt="" className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-neutral-200">Imagen asociada al formulario</p>
+                    <p className="mt-0.5 leading-5">Guarda el avance para confirmar la asociacion.</p>
+                  </div>
                   <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearAdvanceImage} className="font-semibold text-red-300 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
                 </div>
               )}
@@ -372,8 +394,14 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
               <input type="file" accept="video/mp4" disabled={saving || uploadingImage || uploadingVideo} onChange={(event) => onVideoFileChange(event.target.files?.[0])} className="block w-full text-xs text-neutral-400 file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-primary-dark" />
               {uploadingVideo && <span className="text-xs text-primary-light">Subiendo video...</span>}
               {form.videoUrl && (
-                <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400">
-                  <span>Video actual: se reemplazara si elegis otro archivo.</span>
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950/70 p-2 text-xs text-neutral-400">
+                  <div className="flex h-14 w-20 items-center justify-center overflow-hidden rounded-md border border-neutral-700 bg-black">
+                    <video src={form.videoUrl} preload="metadata" muted className="h-full w-full object-cover" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-neutral-200">Video asociado al formulario</p>
+                    <p className="mt-0.5 leading-5">Guarda el avance para confirmar la asociacion.</p>
+                  </div>
                   <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearAdvanceVideo} className="font-semibold text-red-300 hover:text-red-200 disabled:opacity-50">Quitar video</button>
                 </div>
               )}

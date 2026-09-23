@@ -143,7 +143,7 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
             Galeria
           </h2>
           <p className="mt-2 text-sm text-neutral-400">
-            Imagenes complementarias para el detalle publico de la novedad.
+            Imágenes complementarias para el detalle público de la novedad.
           </p>
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
             <p className="text-sm text-neutral-400">Cargando galeria...</p>
           ) : images.length === 0 ? (
             <p className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 text-sm text-neutral-400">
-              Todavia no hay imagenes en la galeria.
+              Todavia no hay imágenes en la galería.
             </p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -175,7 +175,7 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={image.imageUrl} alt={image.altText || image.caption || "Imagen de la novedad"} className="aspect-video w-full object-cover" />
                   <div className="space-y-2 p-3">
-                    <p className="line-clamp-2 text-xs text-neutral-300">{image.caption || image.altText || "Sin descripcion"}</p>
+                    <p className="line-clamp-2 text-xs text-neutral-300">{image.caption || image.altText || "Sin descripción"}</p>
                     <div className="flex items-center justify-between text-xs text-neutral-500">
                       <span>Orden {image.sortOrder}</span>
                       <div className="flex gap-2">
@@ -217,7 +217,7 @@ export default function NewsGalleryManager({ newsId }: { newsId: string }) {
               </span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 disabled={saving}
                 className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
                 onChange={(event) => onUpload(event.target.files?.[0])}

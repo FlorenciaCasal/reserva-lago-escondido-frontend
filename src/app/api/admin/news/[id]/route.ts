@@ -32,3 +32,22 @@ export async function PUT(req: NextRequest, { params }: Params) {
     },
   });
 }
+
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const { id } = await params;
+  const resp = await backendFetch(`/api/admin/news/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+
+  if (resp.status === 204) {
+    return new Response(null, { status: 204 });
+  }
+
+  const text = await resp.text();
+  return new Response(text, {
+    status: resp.status,
+    headers: {
+      "content-type": resp.headers.get("content-type") ?? "application/json",
+    },
+  });
+}

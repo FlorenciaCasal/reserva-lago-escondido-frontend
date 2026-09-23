@@ -2,14 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicProjectDetail from "@/components/projects/PublicProjectDetail";
 import { getPublicProjectBySlug, listPublicProjectAdvances } from "@/services/projects";
-
-const ORIGIN = process.env.APP_ORIGIN ?? "http://localhost:3000";
-
-function absoluteImage(url?: string | null) {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return `${ORIGIN}${url}`;
-}
+import { ogImage, siteUrl } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -26,15 +19,20 @@ export async function generateMetadata({
     };
   }
 
-  const image = absoluteImage(project.imageUrl);
+  const canonical = `/proyectos/${project.slug}`;
 
   return {
     title: `${project.title} | Reserva Natural Lago Escondido`,
     description: project.summary,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: `${project.title} | Reserva Natural Lago Escondido`,
       description: project.summary,
-      ...(image ? { images: [image] } : {}),
+      url: siteUrl(canonical),
+      images: [ogImage(project.imageUrl)],
+      type: "article",
     },
   };
 }

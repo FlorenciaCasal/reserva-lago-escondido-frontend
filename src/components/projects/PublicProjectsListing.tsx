@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RevealOnView from "@/components/ui/RevealOnView";
 import type { Project } from "@/types/project";
 
 export default function PublicProjectsListing({ projects }: { projects: Project[] }) {
@@ -7,7 +8,7 @@ export default function PublicProjectsListing({ projects }: { projects: Project[
       <section className="relative isolate overflow-hidden bg-neutral-950">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/img/home.jpeg"
+          src="/img/home.jpg"
           alt="Paisaje de la reserva"
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -17,8 +18,8 @@ export default function PublicProjectsListing({ projects }: { projects: Project[
             <h1 className="font-serif text-4xl font-semibold leading-tight [text-shadow:0_3px_14px_rgba(0,0,0,0.55)] sm:text-[44px]">
               Proyectos
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-8 text-white/90 [text-shadow:0_2px_10px_rgba(0,0,0,0.55)]">
-              Conoce los proyectos que impulsamos para preservar, investigar y regenerar la naturaleza.
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/90 [text-shadow:0_2px_10px_rgba(0,0,0,0.55)] md:text-base md:leading-8 lg:text-lg">
+              Conoce los proyectos que impulsamos para conservar, investigar y regenerar la naturaleza.
             </p>
           </div>
         </div>
@@ -26,19 +27,17 @@ export default function PublicProjectsListing({ projects }: { projects: Project[
 
       <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8 sm:py-14">
         <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-          {projects.map((project) => (
-            <article
-              key={project.id}
-              className="overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-32px_rgba(15,23,42,0.42)]"
-            >
-              <Link href={`/proyectos/${project.slug}`} className="block">
+          {projects.map((project, index) => (
+            <RevealOnView key={project.id} className="h-full" delay={Math.min(index, 3) * 90}>
+            <article className="group flex h-full flex-col overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)] transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]">
+              <Link href={`/proyectos/${project.slug}`} className="flex h-full flex-col">
                 <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
                   {project.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={project.imageUrl}
                       alt={project.title}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400">
@@ -52,20 +51,21 @@ export default function PublicProjectsListing({ projects }: { projects: Project[
                   )}
                 </div>
 
-                <div className="space-y-4 px-6 py-6">
+                <div className="flex flex-1 flex-col space-y-4 px-6 py-6">
                   <h2 className="font-serif text-2xl font-semibold text-neutral-900">
                     {project.title}
                   </h2>
                   <p className="min-h-20 text-base leading-8 text-neutral-700">
                     {project.summary}
                   </p>
-                  <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2F9F99]">
+                  <span className="mt-auto inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2F9F99]">
                     Ver proyecto
-                    <span aria-hidden="true">&rarr;</span>
+                    <span className="transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">&rarr;</span>
                   </span>
                 </div>
               </Link>
             </article>
+            </RevealOnView>
           ))}
         </div>
       </section>

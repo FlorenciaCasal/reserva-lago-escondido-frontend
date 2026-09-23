@@ -23,7 +23,7 @@ export default function NewsWebPreview({
 }: Props) {
   const displayTitle = title.trim() || "Titulo de la novedad";
   const displaySummary = summary.trim() || "Resumen breve de la novedad para listados y tarjetas.";
-  const displayContent = content.trim() || "El contenido editable aparecera aca para revisar la publicacion antes de guardarla.";
+  const displayContent = content.trim() || "El contenido editable aparecera aca para revisar la publicación antes de guardarla.";
   const gallery = images.filter((image) => image.imageUrl);
 
   return (

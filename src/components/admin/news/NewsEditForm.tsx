@@ -228,7 +228,7 @@ export default function NewsEditForm({ newsId }: Props) {
             {isCreate ? "Crear novedad" : "Editar novedad"}
           </h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Gestiona contenido, publicacion, imagen principal, video y galeria.
+            Gestiona contenido, publicación, imagen principal, video y galería.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -312,7 +312,7 @@ export default function NewsEditForm({ newsId }: Props) {
         <aside className="space-y-6">
           <section className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-light">
-              Configuracion
+              Configuración
             </h2>
             <div className="mt-4 space-y-4">
               <label className="block space-y-1">
@@ -346,7 +346,7 @@ export default function NewsEditForm({ newsId }: Props) {
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   disabled={saving || uploadingImage || uploadingVideo}
                   className="sr-only"
                   onChange={(event) => onMainImageFileChange(event.target.files?.[0])}
@@ -433,12 +433,12 @@ export default function NewsEditForm({ newsId }: Props) {
           {currentStatus === "PUBLISHED" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
           {newsStatusOptions[currentStatus][0]?.label ?? currentStatus}
         </span>
-        {news?.updatedAt && <span>Ultima actualizacion: {new Date(news.updatedAt).toLocaleString("es-AR")}</span>}
+        {news?.updatedAt && <span>Última actualización: {new Date(news.updatedAt).toLocaleString("es-AR")}</span>}
       </div>
 
       {!news && (
         <div className="rounded-xl border border-neutral-800 bg-neutral-950/70 p-4 text-sm leading-6 text-neutral-300">
-          Para cargar galeria, primero guarda la novedad.
+          Para cargar galerÍa, primero guarda la novedad.
         </div>
       )}
 

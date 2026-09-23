@@ -321,9 +321,9 @@ export default function ProjectDocumentsManager({ projectId }: { projectId: stri
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-primary-light">{editingId ? "Editar documento" : "Agregar documento"}</h3>
-              <p className="mt-1 text-sm text-neutral-400">Subi PDF/DOC/DOCX. La URL manual queda como opcion avanzada.</p>
+              <p className="mt-1 text-sm text-neutral-400">Subi PDF/DOC/DOCX. La URL manual queda como opción avanzada.</p>
             </div>
-            {editingId && <button type="button" onClick={resetForm} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800" aria-label="Cancelar edicion"><X className="h-4 w-4" /></button>}
+            {editingId && <button type="button" onClick={resetForm} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800" aria-label="Cancelar edición"><X className="h-4 w-4" /></button>}
           </div>
 
           <div className="mt-4 space-y-4">
@@ -347,7 +347,7 @@ export default function ProjectDocumentsManager({ projectId }: { projectId: stri
             </details>
 
             <label className="block space-y-1">
-              <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Descripcion</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Descripción</span>
               <textarea className={`${inputClass} min-h-24 resize-y leading-relaxed`} value={form.description ?? ""} disabled={saving || uploading} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} />
             </label>
 

@@ -76,8 +76,6 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 shadow-2xl backdrop-blur p-6 sm:p-8">
           {/* Encabezado */}
           <div className="mb-6 text-center">
-            {/* Logo opcional */}
-            {/* <Image src="/logo.svg" alt="logo" width={40} height={40} className="mx-auto mb-2"/> */}
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Ingresar</h1>
             <p className="mt-2 text-sm text-neutral-400">
               Si todavía no tenés cuenta, {" "}

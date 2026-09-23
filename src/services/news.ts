@@ -113,6 +113,23 @@ export function archiveNews(id: string) {
   return newsAction(id, "archive");
 }
 
+export async function deleteNewsPermanently(id: string): Promise<void> {
+  const res = await fetch(`/api/admin/news/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message =
+      typeof data?.error === "string"
+        ? data.error
+        : typeof data?.message === "string"
+          ? data.message
+          : `Error ${res.status}`;
+    throw new Error(message);
+  }
+}
+
 export async function uploadNewsImage(file: File): Promise<NewsMediaAsset> {
   const formData = new FormData();
   formData.append("file", file);

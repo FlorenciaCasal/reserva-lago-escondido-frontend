@@ -167,6 +167,23 @@ export function archiveProject(id: string) {
   return projectAction(id, "archive");
 }
 
+export async function deleteProjectPermanently(id: string): Promise<void> {
+  const res = await fetch(`/api/admin/projects/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message =
+      typeof data?.error === "string"
+        ? data.error
+        : typeof data?.message === "string"
+          ? data.message
+          : `Error ${res.status}`;
+    throw new Error(message);
+  }
+}
+
 export async function listAdminProjectAdvances(projectId: string): Promise<ProjectAdvance[]> {
   const res = await fetch(`/api/admin/projects/${projectId}/advances`, { cache: "no-store" });
   return parseJson<ProjectAdvance[]>(res);
@@ -328,6 +345,10 @@ export async function deleteProjectDocument(projectId: string, documentId: strin
 }
 
 export async function listPublicProjects(): Promise<Project[]> {
+  return listPublicProjectsCmsOnly();
+}
+
+export async function listPublicProjectsWithFallbackForDevelopment(): Promise<Project[]> {
   try {
     const res = await fetchWithTimeout(`${API_URL}/api/projects`, { cache: "no-store" });
     if (!res.ok) return fallbackProjects;
@@ -359,9 +380,9 @@ export async function getPublicProjectBySlug(slug: string): Promise<Project | nu
     });
 
     if (res.ok) return (await res.json()) as Project;
-    return fallbackProjects.find((project) => project.slug === slug) ?? null;
+    return null;
   } catch {
-    return fallbackProjects.find((project) => project.slug === slug) ?? null;
+    return null;
   }
 }
 

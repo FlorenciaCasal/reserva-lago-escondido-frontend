@@ -16,7 +16,7 @@ export default async function NovedadesIaPage() {
         <section className="rounded-xl border border-neutral-800 bg-neutral-950 p-6">
           <h1 className="text-xl font-semibold text-white">Acceso restringido</h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Esta seccion esta disponible solo para usuarios administradores.
+            Esta sección esta disponible solo para usuarios administradores.
           </p>
           <Link
             href="/admin"
@@ -33,7 +33,7 @@ export default async function NovedadesIaPage() {
     <div className="mx-auto max-w-7xl space-y-6 px-0 md:px-2 py-4 sm:px-4">
       <header className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
         <p className="text-xs font-medium uppercase tracking-wide text-primary-light">
-          Administracion
+          Administración
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
           Crear novedad

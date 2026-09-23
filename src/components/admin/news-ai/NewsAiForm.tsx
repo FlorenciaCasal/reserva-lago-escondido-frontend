@@ -187,17 +187,17 @@ export default function NewsAiForm() {
           <div className="space-y-4">
             <label className="block space-y-1">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Tema / informacion base
+                Tema / información base
               </span>
               <textarea
                 className={`${inputClass} min-h-44 resize-y leading-relaxed`}
                 disabled={busy}
                 value={input.brief}
-                placeholder="Ej.: Jornada de restauracion, monitoreo de fauna, actividad educativa o comunicacion institucional relevante."
+                placeholder="Ej.: Jornada de restauración, monitoreo de fauna, actividad educativa o comunicación institucional relevante."
                 onChange={(event) => setInputField("brief", event.target.value)}
               />
               <p className="text-xs leading-5 text-neutral-500">
-                Contale a la IA de que se trata la novedad. No hace falta redactarlo para publicacion; puede ser una sintesis breve o notas internas.
+                Contale a la IA de que se trata la novedad. No hace falta redactarlo para publicación; puede ser una sintesis breve o notas internas.
               </p>
             </label>
 
@@ -222,13 +222,13 @@ export default function NewsAiForm() {
 
               <label className="block space-y-1">
                 <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                  Publico objetivo
+                  Público objetivo
                 </span>
                 <input
                   className={inputClass}
                   disabled={busy}
                   value={input.targetAudience ?? ""}
-                  placeholder="Ej.: comunidad local, visitantes, escuelas, publico general."
+                  placeholder="Ej.: comunidad local, visitantes, escuelas, público general."
                   onChange={(event) => setInputField("targetAudience", event.target.value)}
                 />
               </label>
@@ -243,7 +243,7 @@ export default function NewsAiForm() {
               </span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 disabled={busy}
                 onChange={(event) => onImageFileChange(event.target.files?.[0])}
                 className="sr-only"

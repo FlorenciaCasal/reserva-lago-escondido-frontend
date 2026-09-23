@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { Archive, Eye, Pencil, Plus } from "lucide-react";
-import { archiveNews, listAdminNews, publishNews } from "@/services/news";
+import { Archive, Eye, MoreVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { archiveNews, deleteNewsPermanently, listAdminNews, publishNews } from "@/services/news";
+import TruncatedTitle from "@/components/admin/TruncatedTitle";
 import type { News, NewsStatus } from "@/types/news";
 
 function statusLabel(status: NewsStatus) {
@@ -27,6 +28,7 @@ export default function NewsAdminList() {
   const [news, setNews] = React.useState<News[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [savingId, setSavingId] = React.useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<NewsStatus | "ALL">("ALL");
   const [error, setError] = React.useState<string | null>(null);
@@ -60,8 +62,29 @@ export default function NewsAdminList() {
     try {
       const updated = action === "publish" ? await publishNews(item.id) : await archiveNews(item.id);
       setNews((current) => current.map((entry) => (entry.id === updated.id ? updated : entry)));
+      setOpenMenuId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo actualizar la novedad.");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function deletePermanently(item: News) {
+    const confirmed = window.confirm(
+      "Eliminar definitivamente esta novedad? Esta acción no se puede deshacer y solo esta disponible para novedades archivadas."
+    );
+    if (!confirmed) return;
+
+    setSavingId(item.id);
+    setError(null);
+
+    try {
+      await deleteNewsPermanently(item.id);
+      setNews((current) => current.filter((entry) => entry.id !== item.id));
+      setOpenMenuId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo eliminar la novedad.");
     } finally {
       setSavingId(null);
     }
@@ -72,13 +95,13 @@ export default function NewsAdminList() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-primary-light">
-            Administracion
+            Administración
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
             Novedades
           </h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Gestiona publicaciones, imagen principal, galeria y estado editorial.
+            Gestiona publicaciones, imagen principal, galería y estado editorial.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -125,7 +148,83 @@ export default function NewsAdminList() {
         ) : filtered.length === 0 ? (
           <p className="p-4 text-sm text-neutral-400">No hay novedades para mostrar.</p>
         ) : (
-          <div className="w-full overflow-x-auto">
+          <>
+          <div className="divide-y divide-neutral-800 md:hidden">
+            {filtered.map((item) => {
+              const busy = savingId === item.id;
+              const menuOpen = openMenuId === item.id;
+              return (
+                <article key={item.id} className="relative p-3">
+                  <div className="flex min-w-0 gap-3 pr-11">
+                    {item.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.imageUrl} alt={item.title} className="h-14 w-14 shrink-0 rounded-md object-cover" />
+                    ) : (
+                      <div className="h-14 w-14 shrink-0 rounded-md bg-neutral-800" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <TruncatedTitle className="font-semibold text-neutral-100">{item.title}</TruncatedTitle>
+                      <p className="mt-1 max-h-[36px] overflow-hidden text-xs leading-[18px] text-neutral-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                        {item.summary}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+                        <span className={`rounded-full border px-2 py-1 ${statusClass(item.status)}`}>
+                          {statusLabel(item.status)}
+                        </span>
+                        <span>Publicado: {fmtDate(item.publishedAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpenMenuId(menuOpen ? null : item.id)}
+                    className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                    aria-label="Abrir acciones"
+                    aria-expanded={menuOpen}
+                  >
+                    <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                  {menuOpen && (
+                    <div className="absolute right-3 top-12 z-20 w-56 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-950 shadow-2xl shadow-black/50">
+                      <Link
+                        href={`/admin/novedades/${item.id}/editar`}
+                        className="block px-3 py-2 text-sm text-neutral-100 hover:bg-neutral-800"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={busy || item.status === "PUBLISHED"}
+                        onClick={() => runAction(item, "publish")}
+                        className="block w-full px-3 py-2 text-left text-sm text-neutral-100 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Publicar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || item.status === "ARCHIVED"}
+                        onClick={() => runAction(item, "archive")}
+                        className="block w-full px-3 py-2 text-left text-sm text-red-200 hover:bg-red-950/50 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Archivar
+                      </button>
+                      {item.status === "ARCHIVED" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => deletePermanently(item)}
+                          className="block w-full px-3 py-2 text-left text-sm font-semibold text-red-100 hover:bg-red-950/70 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Eliminar definitivamente
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          <div className="hidden w-full overflow-x-auto md:block">
             <table className="w-full min-w-[700px] table-fixed text-left text-sm">
               <thead className="border-b border-neutral-800 bg-neutral-900 text-neutral-400">
                 <tr>
@@ -149,7 +248,7 @@ export default function NewsAdminList() {
                             <div className="h-12 w-12 shrink-0 rounded-md bg-neutral-800" />
                           )}
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-neutral-100">{item.title}</p>
+                            <TruncatedTitle className="font-semibold text-neutral-100">{item.title}</TruncatedTitle>
                             <p className="max-h-9 overflow-hidden text-xs leading-[18px] text-neutral-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{item.summary}</p>
                           </div>
                         </div>
@@ -185,6 +284,16 @@ export default function NewsAdminList() {
                           >
                             <Archive className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
+                          {item.status === "ARCHIVED" && (
+                            <button
+                              disabled={busy}
+                              onClick={() => deletePermanently(item)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-600 bg-red-950/40 text-red-100 hover:bg-red-900/60 disabled:opacity-40"
+                              aria-label="Eliminar definitivamente"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -193,6 +302,7 @@ export default function NewsAdminList() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </div>

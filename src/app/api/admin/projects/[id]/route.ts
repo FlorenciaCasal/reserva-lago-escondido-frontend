@@ -33,3 +33,23 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     },
   });
 }
+
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
+  const { id } = await params;
+  const resp = await backendFetch(`/api/admin/projects/${id}`, {
+    method: "DELETE",
+  });
+
+  if (resp.status === 204) {
+    return new Response(null, { status: 204 });
+  }
+
+  const text = await resp.text();
+
+  return new Response(text, {
+    status: resp.status,
+    headers: {
+      "content-type": resp.headers.get("content-type") ?? "application/json",
+    },
+  });
+}

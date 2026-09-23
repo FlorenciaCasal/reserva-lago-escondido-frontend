@@ -1,0 +1,11 @@
+/* Scope document scrolling to pages that render this navigation. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html):has(.navigation) {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Sticky navbar is up to 73px tall; leave additional breathing room. */
+.navigation ~ section[id] {
+  scroll-margin-top: 6rem;
+}

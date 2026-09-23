@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import ReservationCard, { ReservationView } from "@/components/reservation/ReservationCard";
+
+export const metadata: Metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
 
 async function fetchReservation(id: string): Promise<ReservationView> {
     const base = process.env.APP_ORIGIN || "http://localhost:3000";

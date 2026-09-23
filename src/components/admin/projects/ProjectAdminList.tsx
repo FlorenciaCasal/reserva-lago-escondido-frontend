@@ -6,19 +6,23 @@ import {
   Archive,
   Eye,
   EyeOff,
+  MoreVertical,
   Pencil,
   Sparkles,
   Star,
   StarOff,
+  Trash2,
 } from "lucide-react";
 import {
   archiveProject,
+  deleteProjectPermanently,
   featureProject,
   listAdminProjects,
   publishProject,
   unfeatureProject,
   unpublishProject,
 } from "@/services/projects";
+import TruncatedTitle from "@/components/admin/TruncatedTitle";
 import type { Project, ProjectStatus } from "@/types/project";
 
 function statusLabel(status: ProjectStatus) {
@@ -42,6 +46,7 @@ export default function ProjectAdminList() {
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [savingId, setSavingId] = React.useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<ProjectStatus | "ALL">("ALL");
   const [error, setError] = React.useState<string | null>(null);
@@ -85,8 +90,29 @@ export default function ProjectAdminList() {
                 : await archiveProject(project.id);
 
       setProjects((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      setOpenMenuId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo actualizar el proyecto.");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function deletePermanently(project: Project) {
+    const confirmed = window.confirm(
+      "Eliminar definitivamente este proyecto? Esta acción no se puede deshacer y solo esta disponible para proyectos archivados."
+    );
+    if (!confirmed) return;
+
+    setSavingId(project.id);
+    setError(null);
+
+    try {
+      await deleteProjectPermanently(project.id);
+      setProjects((current) => current.filter((item) => item.id !== project.id));
+      setOpenMenuId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo eliminar el proyecto.");
     } finally {
       setSavingId(null);
     }
@@ -97,13 +123,13 @@ export default function ProjectAdminList() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-primary-light">
-            Administracion
+            Administración
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
             Proyectos
           </h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Gestiona estado, destacado y contenido de proyectos de conservacion.
+            Gestiona estado, destacado y contenido de proyectos de conservación.
           </p>
         </div>
         <Link
@@ -148,7 +174,96 @@ export default function ProjectAdminList() {
         ) : filtered.length === 0 ? (
           <p className="p-4 text-sm text-neutral-400">No hay proyectos para mostrar.</p>
         ) : (
-          <div className="w-full overflow-hidden">
+          <>
+          <div className="divide-y divide-neutral-800 md:hidden">
+            {filtered.map((project) => {
+              const busy = savingId === project.id;
+              const menuOpen = openMenuId === project.id;
+              return (
+                <article key={project.id} className="relative p-3">
+                  <div className="flex min-w-0 gap-3 pr-11">
+                    {project.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={project.imageUrl}
+                        alt={project.title}
+                        className="h-14 w-14 shrink-0 rounded-md object-cover"
+                      />
+                    ) : (
+                      <div className="h-14 w-14 shrink-0 rounded-md bg-neutral-800" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <TruncatedTitle className="font-semibold text-neutral-100">{project.title}</TruncatedTitle>
+                      <p className="mt-1 max-h-[36px] overflow-hidden text-xs leading-[18px] text-neutral-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                        {project.summary}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+                        <span className={`rounded-full border px-2 py-1 ${statusClass(project.status)}`}>
+                          {statusLabel(project.status)}
+                        </span>
+                        <span>Publicado: {fmtDate(project.publishedAt)}</span>
+                        <span>Destacado: {project.featured ? "Si" : "No"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOpenMenuId(menuOpen ? null : project.id)}
+                    className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                    aria-label="Abrir acciones"
+                    aria-expanded={menuOpen}
+                  >
+                    <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                  {menuOpen && (
+                    <div className="absolute right-3 top-12 z-20 w-56 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-950 shadow-2xl shadow-black/50">
+                      <Link
+                        href={`/admin/proyectos/${project.id}/editar`}
+                        className="block px-3 py-2 text-sm text-neutral-100 hover:bg-neutral-800"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={busy || project.status === "ARCHIVED"}
+                        onClick={() => runAction(project, project.status === "PUBLISHED" ? "unpublish" : "publish")}
+                        className="block w-full px-3 py-2 text-left text-sm text-neutral-100 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {project.status === "PUBLISHED" ? "Despublicar" : "Publicar"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || project.status === "ARCHIVED"}
+                        onClick={() => runAction(project, project.featured ? "unfeature" : "feature")}
+                        className="block w-full px-3 py-2 text-left text-sm text-neutral-100 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {project.featured ? "Quitar destacado" : "Destacar"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy || project.status === "ARCHIVED"}
+                        onClick={() => runAction(project, "archive")}
+                        className="block w-full px-3 py-2 text-left text-sm text-red-200 hover:bg-red-950/50 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Archivar
+                      </button>
+                      {project.status === "ARCHIVED" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => deletePermanently(project)}
+                          className="block w-full px-3 py-2 text-left text-sm font-semibold text-red-100 hover:bg-red-950/70 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Eliminar definitivamente
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          <div className="hidden w-full overflow-hidden md:block">
             <table className="w-full table-fixed text-left text-sm">
               <thead className="border-b border-neutral-800 bg-neutral-900 text-neutral-400">
                 <tr>
@@ -177,7 +292,7 @@ export default function ProjectAdminList() {
                             <div className="h-12 w-12 shrink-0 rounded-md bg-neutral-800" />
                           )}
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-neutral-100">{project.title}</p>
+                            <TruncatedTitle className="font-semibold text-neutral-100">{project.title}</TruncatedTitle>
                             <p className="max-h-9 overflow-hidden text-xs leading-[18px] text-neutral-400 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{project.summary}</p>
                           </div>
                         </div>
@@ -224,6 +339,16 @@ export default function ProjectAdminList() {
                           >
                             <Archive className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
+                          {project.status === "ARCHIVED" && (
+                            <button
+                              disabled={busy}
+                              onClick={() => deletePermanently(project)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-600 bg-red-950/40 text-red-100 hover:bg-red-900/60 disabled:opacity-40"
+                              aria-label="Eliminar definitivamente"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -232,6 +357,7 @@ export default function ProjectAdminList() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </div>

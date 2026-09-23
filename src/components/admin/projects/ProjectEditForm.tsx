@@ -10,6 +10,7 @@ import {
   getAdminProject,
   updateProject,
   uploadProjectImage,
+  uploadProjectVideo,
 } from "@/services/projects";
 import type { Project, ProjectStatus, UpdateProjectInput } from "@/types/project";
 
@@ -58,6 +59,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [uploadingImage, setUploadingImage] = React.useState(false);
+  const [uploadingVideo, setUploadingVideo] = React.useState(false);
   const [project, setProject] = React.useState<Project | null>(null);
   const [form, setForm] = React.useState<UpdateProjectInput | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -107,13 +109,16 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
 
   const currentStatus = form.status ?? project.status;
   const imageUrl = getPublicUrl(form.imageUrl);
+  const videoUrl = getPublicUrl(form.videoUrl);
   const invalidImageUrl = isInvalidLocalUrl(form.imageUrl);
+  const invalidVideoUrl = isInvalidLocalUrl(form.videoUrl);
   const canSave =
     form.title.trim() &&
     form.summary.trim() &&
     form.content.trim() &&
     form.slug.trim() &&
-    !invalidImageUrl;
+    !invalidImageUrl &&
+    !invalidVideoUrl;
 
   function setField<K extends keyof UpdateProjectInput>(key: K, value: UpdateProjectInput[K]) {
     setForm((current) => (current ? { ...current, [key]: value } : current));
@@ -136,7 +141,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
         imageAssetId: form.imageAssetId ?? null,
         imageUrl,
         videoAssetId: form.videoAssetId ?? null,
-        videoUrl: form.videoUrl ?? null,
+        videoUrl,
         featured: form.featured,
         status: form.status,
       };
@@ -192,6 +197,39 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
     setField("imageAssetId", null);
     setSuccess("Imagen principal quitada. Guarda los datos del proyecto para confirmar el cambio.");
   }
+
+  async function onMainVideoFileChange(file?: File) {
+    if (!file) return;
+
+    setUploadingVideo(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const uploaded = await uploadProjectVideo(file);
+      setForm((current) =>
+        current
+          ? {
+              ...current,
+              videoAssetId: uploaded.id,
+              videoUrl: uploaded.url,
+            }
+          : current
+      );
+      setSuccess("Video subido. Guarda los datos del proyecto para asociarlo definitivamente.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir el video.");
+    } finally {
+      setUploadingVideo(false);
+    }
+  }
+
+  function clearMainVideo() {
+    setField("videoUrl", "");
+    setField("videoAssetId", null);
+    setSuccess("Video principal quitado. Guarda los datos del proyecto para confirmar el cambio.");
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-2 py-4 sm:px-4">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -203,7 +241,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
             Editar proyecto
           </h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Gestiona informacion, estado, destacado e imagen principal.
+            Gestiona información, estado, destacado y multimedia principal.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -256,7 +294,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <input
                 className={inputClass}
                 value={form.title}
-                disabled={saving || uploadingImage}
+                disabled={saving || uploadingImage || uploadingVideo}
                 onChange={(event) => {
                   const title = event.target.value;
                   setForm((current) =>
@@ -279,19 +317,19 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <textarea
                 className={`${inputClass} min-h-24 resize-y`}
                 value={form.summary}
-                disabled={saving || uploadingImage}
+                disabled={saving || uploadingImage || uploadingVideo}
                 onChange={(event) => setField("summary", event.target.value)}
               />
             </label>
 
             <label className="block space-y-1">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Descripcion detallada
+                Descripción detallada
               </span>
               <textarea
                 className={`${inputClass} min-h-80 resize-y leading-relaxed`}
                 value={form.content}
-                disabled={saving || uploadingImage}
+                disabled={saving || uploadingImage || uploadingVideo}
                 onChange={(event) => setField("content", event.target.value)}
               />
             </label>
@@ -301,7 +339,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
         <aside className="space-y-6">
           <section className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-light">
-              Configuracion
+              Configuración
             </h2>
             <div className="mt-4 space-y-4">
               <label className="block space-y-1">
@@ -311,7 +349,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
                 <select
                   className={inputClass}
                   value={currentStatus}
-                  disabled={saving || uploadingImage}
+                  disabled={saving || uploadingImage || uploadingVideo}
                   onChange={(event) => setField("status", event.target.value as ProjectStatus)}
                 >
                   {projectStatusOptions[project.status].map((option) => (
@@ -326,7 +364,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
                 <input
                   type="checkbox"
                   checked={Boolean(form.featured)}
-                  disabled={saving || currentStatus === "ARCHIVED"}
+                  disabled={saving || uploadingImage || uploadingVideo || currentStatus === "ARCHIVED"}
                   onChange={(event) => setField("featured", event.target.checked)}
                 />
                 <Star className="h-4 w-4 text-primary-light" aria-hidden="true" />
@@ -347,27 +385,58 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={saving || uploadingImage}
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                  disabled={saving || uploadingImage || uploadingVideo}
                   className="sr-only"
                   onChange={(event) => onMainImageFileChange(event.target.files?.[0])}
                 />
-                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage}>
+                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage || uploadingVideo}>
                   {imageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
                 </span>
                 {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
                 {imageUrl && (
-                  <button type="button" disabled={saving || uploadingImage} onClick={clearMainImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
+                  <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearMainImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
                 )}
               </label>
 
               {imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imageUrl}
-                  alt={form.title}
-                  className="aspect-video w-full rounded-lg border border-neutral-800 object-cover"
+                <figure className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70">
+                  <figcaption className="border-b border-neutral-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+                    Vista previa actual
+                  </figcaption>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl}
+                    alt={form.title || "Imagen principal del proyecto"}
+                    className="aspect-video w-full object-cover"
+                  />
+                </figure>
+              )}
+
+              <label className="block space-y-2">
+                <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                  Video principal
+                </span>
+                <input
+                  type="file"
+                  accept="video/mp4"
+                  disabled={saving || uploadingImage || uploadingVideo}
+                  className="sr-only"
+                  onChange={(event) => onMainVideoFileChange(event.target.files?.[0])}
                 />
+                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage || uploadingVideo}>
+                  {videoUrl ? "Cambiar video" : "Seleccionar video"}
+                </span>
+                {uploadingVideo && <p className="text-xs text-neutral-400">Subiendo video...</p>}
+                {videoUrl && (
+                  <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearMainVideo} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar video</button>
+                )}
+              </label>
+
+              {videoUrl && (
+                <video controls preload="metadata" className="aspect-video w-full rounded-lg border border-neutral-800 bg-black object-contain">
+                  <source src={videoUrl} type="video/mp4" />
+                </video>
               )}
             </div>
           </section>
@@ -380,7 +449,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <input
                 className={inputClass}
                 value={form.slug}
-                disabled={saving || uploadingImage}
+                disabled={saving || uploadingImage || uploadingVideo}
                 onChange={(event) => setField("slug", slugify(event.target.value))}
               />
             </label>
@@ -391,7 +460,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
             </p>
             <button
               type="button"
-              disabled={!canSave || saving}
+              disabled={!canSave || saving || uploadingImage || uploadingVideo}
               onClick={onSave}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400 disabled:shadow-none"
             >
@@ -407,11 +476,11 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
           {currentStatus === "PUBLISHED" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
           {projectStatusOptions[currentStatus][0]?.label ?? currentStatus}
         </span>
-        <span>Ultima actualizacion: {project.updatedAt ? new Date(project.updatedAt).toLocaleString("es-AR") : "-"}</span>
+        <span>Ultima actualización: {project.updatedAt ? new Date(project.updatedAt).toLocaleString("es-AR") : "-"}</span>
       </div>
 
       <div className="rounded-xl border border-neutral-800 bg-neutral-950/70 p-4 text-sm leading-6 text-neutral-300">
-        Estas secciones se guardan por separado: usa los botones de galeria, documentos y avances para crear, editar, ordenar o eliminar cada elemento.
+        Estas secciones se guardan por separado: usa los botones de galería, documentos y avances para crear, editar, ordenar o eliminar cada elemento.
       </div>
 
       <ProjectGalleryManager projectId={projectId} />

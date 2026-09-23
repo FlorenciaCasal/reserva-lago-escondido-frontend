@@ -7,7 +7,7 @@ export default async function ProjectsGrid() {
     return (
         <section id="proyectos" className="py-10 px-6 bg-primary scroll-mt-24">
             <h3 className="text-center text-white text-lg font-semibold mb-4">
-                PROYECTOS DE CONSERVACION
+                PROYECTOS DE CONSERVACIÓN
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -20,7 +20,7 @@ export default async function ProjectsGrid() {
                         <div className="relative w-full aspect-square rounded-xl overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={project.imageUrl || "/img/home.jpeg"}
+                                src={project.imageUrl || "/img/home.jpg"}
                                 alt={project.title}
                                 className="h-full w-full object-cover"
                             />

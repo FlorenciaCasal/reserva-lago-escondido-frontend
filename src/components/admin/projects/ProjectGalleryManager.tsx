@@ -28,11 +28,6 @@ function getPublicImageUrl(value?: string | null) {
   return "";
 }
 
-function isInvalidImageUrl(value?: string | null) {
-  const url = value?.trim();
-  return Boolean(url) && !getPublicImageUrl(url);
-}
-
 function normalizeSortOrder(value: number | undefined) {
   return Number.isFinite(value) && value !== undefined && value >= 0 ? value : 0;
 }
@@ -55,13 +50,12 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
     return () => window.clearTimeout(timeout);
   }, [success]);
 
-  const invalidImageUrl = isInvalidImageUrl(form.imageUrl);
-  const canSave = (Boolean(form.mediaAssetId) || Boolean(form.imageUrl.trim())) && !invalidImageUrl;
+  const selectedImageUrl = getPublicImageUrl(form.imageUrl);
+  const canSave = Boolean(form.mediaAssetId) || Boolean(selectedImageUrl);
 
   function sortedImages(items: ProjectImage[]) {
     return [...items].sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt?.localeCompare(b.createdAt ?? "") || 0);
   }
-
 
   React.useEffect(() => {
     listAdminProjectImages(projectId)
@@ -85,6 +79,7 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
       .catch(() => setError("No se pudo cargar la galeria del proyecto."))
       .finally(() => setLoading(false));
   }, [projectId]);
+
   async function normalizeRemoteImages(items: ProjectImage[]) {
     const sorted = sortedImages(items);
     const normalized = await Promise.all(
@@ -139,50 +134,33 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
   }
 
   async function onImageFileChange(files?: FileList | null) {
-    const selectedFiles = Array.from(files ?? []);
-    if (selectedFiles.length === 0) return;
+    const file = files?.[0];
+    if (!file) return;
 
-    setSaving(true);
     setUploadingImage(true);
     setError(null);
     setSuccess(null);
 
     try {
-      if (editingId) {
-        const uploaded = await uploadProjectImage(selectedFiles[0]);
-        setForm((current) => ({
-          ...current,
-          mediaAssetId: uploaded.id,
-          imageUrl: uploaded.url,
-        }));
-        setSuccess("Imagen subida. Guarda la imagen para confirmar el cambio.");
-        return;
-      }
-
-      const createdImages: ProjectImage[] = [];
-      const startOrder = sortedImages(images).length;
-      for (const [index, file] of selectedFiles.entries()) {
-        const uploaded = await uploadProjectImage(file);
-        const created = await createProjectImage(projectId, {
-          imageUrl: uploaded.url,
-          mediaAssetId: uploaded.id,
-          altText: uploaded.originalFilename.replace(/\.[^.]+$/, ""),
-          caption: null,
-          sortOrder: startOrder + index,
-        });
-        createdImages.push(created);
-      }
-
-      setImages(await normalizeRemoteImages([...images, ...createdImages]));
-      setShowForm(false);
-      setSuccess(`${createdImages.length} imagen(es) agregada(s) correctamente.`);
+      const uploaded = await uploadProjectImage(file);
+      setForm((current) => ({
+        ...current,
+        mediaAssetId: uploaded.id,
+        imageUrl: uploaded.url,
+        altText: current.altText ?? "",
+      }));
+      setSuccess(
+        editingId
+          ? "Imagen subida. Guarda la imagen para confirmar el cambio."
+          : "Imagen subida. Completa los datos y agregala a la galeria."
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo subir la imagen.");
     } finally {
       setUploadingImage(false);
-      setSaving(false);
     }
   }
+
   async function onSubmit() {
     if (!canSave) return;
 
@@ -191,7 +169,7 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
     setSuccess(null);
 
     const payload: ProjectImageInput = {
-      imageUrl: getPublicImageUrl(form.imageUrl),
+      imageUrl: selectedImageUrl,
       mediaAssetId: form.mediaAssetId ?? null,
       altText: form.altText?.trim() || null,
       caption: form.caption?.trim() || null,
@@ -257,13 +235,14 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
       setSaving(false);
     }
   }
+
   return (
     <section id="project-gallery" className="scroll-mt-24 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-white">Galeria de imagenes</h2>
+          <h2 className="text-lg font-semibold text-white">Galeria de imágenes</h2>
           <p className="mt-1 text-sm text-neutral-400">
-            Administra imagenes asociadas al proyecto sin reemplazar la imagen principal.
+            Administra imágenes asociadas al proyecto sin reemplazar la imagen principal.
           </p>
         </div>
       </div>
@@ -288,7 +267,7 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
             </div>
           ) : images.length === 0 ? (
             <div className="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/40 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-3 2xl:col-span-4">
-              Todavia no hay imagenes asociadas a este proyecto.
+              Todavia no hay imágenes asociadas a este proyecto.
             </div>
           ) : (
             sortedImages(images).map((image, index) => (
@@ -363,108 +342,93 @@ export default function ProjectGalleryManager({ projectId }: { projectId: string
         </div>
 
         {(showForm || editingId) && (
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-primary-light">
-                {editingId ? "Editar imagen" : "Agregar imagenes"}
+          <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-neutral-100">
+                {editingId ? "Editar imagen" : "Seleccionar imagen"}
               </h3>
-              <p className="mt-1 text-xs leading-5 text-neutral-400">
-                {editingId
-                  ? "Selecciona un archivo para reemplazar la imagen actual y luego guarda los cambios."
-                  : "Selecciona una o varias imagenes. Se agregan automaticamente a la galeria."}
-              </p>
-            </div>
-            {editingId && (
               <button
                 type="button"
                 onClick={resetForm}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
-                aria-label="Cancelar edicion"
+                aria-label={editingId ? "Cancelar edición" : "Cancelar carga de imagen"}
               >
                 <X className="h-4 w-4" />
               </button>
-            )}
-          </div>
+            </div>
 
-          <div className="mt-3 space-y-3">
-            <label className="block space-y-1 rounded-lg border border-dashed border-neutral-700 p-2.5">
-              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
-                <Upload className="h-4 w-4" />
-                Seleccionar archivo
-              </span>
-              <input
-                type="file"
-                multiple={!editingId}
-                accept="image/jpeg,image/png,image/webp"
-                disabled={saving || uploadingImage}
-                className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
-                onChange={(event) => onImageFileChange(event.target.files)}
-              />
-              {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagenes...</p>}
-            </label>
+            <div className="mt-4 space-y-4">
+              <label className="block space-y-2">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+                  <Upload className="h-4 w-4" />
+                  Elegir archivo
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                  disabled={saving || uploadingImage}
+                  className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
+                  onChange={(event) => onImageFileChange(event.target.files)}
+                />
+                {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
+              </label>
 
-            {editingId && (
-              <details className="rounded-lg border border-neutral-800 bg-neutral-950/60 p-3">
-                <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                  URL manual de imagen
-                </summary>
-                <label className="mt-3 block space-y-1">
-                  <input
-                    className={inputClass}
-                    value={form.imageUrl}
-                    disabled={saving}
-                    placeholder="/img/proyectos/galeria-1.jpg"
-                    onChange={(event) => setForm((current) => ({ ...current, imageUrl: event.target.value, mediaAssetId: null }))}
+              {selectedImageUrl && (
+                <figure className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-950/70">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedImageUrl}
+                    alt={form.altText || form.caption || "Imagen seleccionada"}
+                    className="aspect-video w-full object-cover"
                   />
-                  {invalidImageUrl && (
-                    <p className="text-xs leading-5 text-yellow">
-                      Usa /img/..., /api/media/... o una URL http(s). No se permiten rutas C:\.
-                    </p>
-                  )}
-                </label>
-              </details>
-            )}
+                </figure>
+              )}
 
-            {editingId && (
-              <>
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Texto alternativo
-                  </span>
-                  <input
-                    className={inputClass}
-                    value={form.altText ?? ""}
-                    disabled={saving}
-                    onChange={(event) => setForm((current) => ({ ...current, altText: event.target.value }))}
-                  />
-                </label>
+              <label className="block space-y-1">
+                <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                  Texto alternativo
+                </span>
+                <input
+                  className={inputClass}
+                  value={form.altText ?? ""}
+                  disabled={saving}
+                  onChange={(event) => setForm((current) => ({ ...current, altText: event.target.value }))}
+                />
+              </label>
 
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Epigrafe
-                  </span>
-                  <textarea
-                    className={`${inputClass} min-h-24 resize-y leading-relaxed`}
-                    value={form.caption ?? ""}
-                    disabled={saving}
-                    onChange={(event) => setForm((current) => ({ ...current, caption: event.target.value }))}
-                  />
-                </label>
+              <label className="block space-y-1">
+                <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                  Epigrafe
+                </span>
+                <textarea
+                  className={`${inputClass} min-h-24 resize-y leading-relaxed`}
+                  value={form.caption ?? ""}
+                  disabled={saving}
+                  onChange={(event) => setForm((current) => ({ ...current, caption: event.target.value }))}
+                />
+              </label>
 
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  disabled={!canSave || saving}
-                  onClick={onSubmit}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400"
+                  disabled={saving || uploadingImage}
+                  onClick={resetForm}
+                  className="inline-flex justify-center rounded-lg border border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-800 disabled:opacity-50"
                 >
-                  <Save className="h-4 w-4" />
-                  Guardar imagen
+                  Cancelar
                 </button>
-              </>
-            )}
+                <button
+                  type="button"
+                  disabled={!canSave || saving || uploadingImage}
+                  onClick={onSubmit}
+                  className="inline-flex justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400"
+                >
+                  {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  {editingId ? "Guardar imagen" : "Agregar imagen"}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
         )}
       </div>
     </section>

@@ -29,26 +29,28 @@ const initialInput: GenerateProjectInput = {
 };
 
 const targetAudienceOptions = [
-  "Publico general",
+  "Público general",
   "Instituciones educativas",
-  "Comunidad cientifica",
-  "Organismos publicos",
+  "Comunidad científica",
+  "Organismos públicos",
   "Visitantes de la reserva",
   "Comunidad local",
-  "Medios de comunicacion",
+  "Medios de comunicación",
   "Organizaciones ambientales",
 ];
 
-const customTargetAudienceOption = "Otro / publico objetivo personalizado";
+const customTargetAudienceOption = "Otro / público objetivo personalizado";
 
 const customObjectiveOption = "Otro / objetivo personalizado";
 
 const communicationObjectiveOptions = [
-  "Difundir el trabajo de conservacion que se realiza para proteger los bosques de alerce.",
-  "Concientizar sobre la importancia de conservar los alerces frente al cambio climatico.",
-  "Dar a conocer la investigacion cientifica que respalda la restauracion de los bosques de alerce.",
-  "Visibilizar el compromiso de la Reserva Natural Lago Escondido con la conservacion y la investigacion cientifica.",
-  "Comunicar el valor del proyecto para fomentar nuevas alianzas cientificas e institucionales.",
+  "Informar",
+  "Educar",
+  "Concientizar",
+  "Difundir",
+  "Convocar",
+  "Visibilizar",
+  "Actualizar",
   customObjectiveOption,
 ];
 
@@ -72,12 +74,6 @@ type DraftGalleryImage = ProjectImageInput & {
   clientId: string;
 };
 
-const emptyGalleryImage: ProjectImageInput = {
-  imageUrl: "",
-  altText: "",
-  caption: "",
-  sortOrder: 0,
-};
 
 type DraftProjectDocument = ProjectDocumentInput & {
   clientId: string;
@@ -154,7 +150,6 @@ export default function ProjectAiForm() {
   const [draft, setDraft] = React.useState<GeneratedProjectDraft | null>(null);
   const [inputImageAssetId, setInputImageAssetId] = React.useState<string | null>(null);
   const [galleryImages, setGalleryImages] = React.useState<DraftGalleryImage[]>([]);
-  const [galleryForm, setGalleryForm] = React.useState<ProjectImageInput>(emptyGalleryImage);
   const [showGalleryForm, setShowGalleryForm] = React.useState(false);
   const [projectDocuments, setProjectDocuments] = React.useState<DraftProjectDocument[]>([]);
   const [documentForm, setDocumentForm] = React.useState<ProjectDocumentInput>(emptyProjectDocument);
@@ -212,12 +207,9 @@ export default function ProjectAiForm() {
   const busy = generating || saving;
   const inputImageUrl = getPublicImageUrl(input.imageUrl);
   const draftImageUrl = getPublicImageUrl(activeDraft.imageUrl);
-  const galleryImageUrl = getGalleryImageUrl(galleryForm.imageUrl);
-  const hasInvalidGalleryImageUrl = Boolean(galleryForm.imageUrl?.trim()) && !galleryImageUrl;
   const hasInvalidSavedGalleryImage = galleryImages.some(
     (image) => Boolean(image.imageUrl.trim()) && !getGalleryImageUrl(image.imageUrl)
   );
-  const canAddGalleryImage = (Boolean(galleryForm.mediaAssetId) || Boolean(galleryImageUrl)) && !hasInvalidGalleryImageUrl;
   const documentFileUrl = getProjectDocumentUrl(documentForm.fileUrl);
   const hasInvalidDocumentFileUrl = Boolean(documentForm.fileUrl?.trim()) && !documentFileUrl;
   const hasInvalidSavedProjectDocument = projectDocuments.some(
@@ -280,13 +272,14 @@ export default function ProjectAiForm() {
 
     try {
       const uploadedImages: DraftGalleryImage[] = [];
+
       for (const file of selectedFiles) {
         const uploaded = await uploadProjectImage(file);
         uploadedImages.push({
           clientId: crypto.randomUUID(),
           imageUrl: uploaded.url,
           mediaAssetId: uploaded.id,
-          altText: uploaded.originalFilename.replace(/\.[^.]+$/, ""),
+          altText: "",
           caption: "",
           sortOrder: 0,
         });
@@ -309,7 +302,6 @@ export default function ProjectAiForm() {
       setUploadingGalleryImage(false);
     }
   }
-
   async function onDocumentFileChange(files?: FileList | null) {
     const selectedFiles = Array.from(files ?? []);
     if (selectedFiles.length === 0) return;
@@ -430,7 +422,6 @@ export default function ProjectAiForm() {
       setSelectedTargetAudiences([]);
       setInputImageAssetId(null);
       setGalleryImages([]);
-      setGalleryForm(emptyGalleryImage);
       setProjectDocuments([]);
       setDocumentForm(emptyProjectDocument);
       setStatus("PUBLISHED");
@@ -439,7 +430,7 @@ export default function ProjectAiForm() {
       if (failedDocumentCount > 0) failureParts.push(`${failedDocumentCount} documento(s)`);
       if (failureParts.length > 0) {
         setError(
-          `Proyecto guardado, pero no se pudieron asociar ${failureParts.join(" y ")}. Podes completarlo desde la edicion del proyecto.`
+          `Proyecto guardado, pero no se pudieron asociar ${failureParts.join(" y ")}. Podes completarlo desde la edición del proyecto.`
         );
       } else {
         setSuccess("Proyecto guardado correctamente.");
@@ -462,25 +453,6 @@ export default function ProjectAiForm() {
     setDraft((current) => ({ ...(current ?? emptyDraft), ...next }));
   }
 
-  function addGalleryImage() {
-    if (!canAddGalleryImage) return;
-
-    setGalleryImages((current) =>
-      normalizeGalleryDrafts([
-        ...current,
-        {
-          clientId: crypto.randomUUID(),
-          imageUrl: galleryImageUrl,
-          mediaAssetId: galleryForm.mediaAssetId ?? null,
-          altText: galleryForm.altText?.trim() || "",
-          caption: galleryForm.caption?.trim() || "",
-          sortOrder: current.length,
-        },
-      ])
-    );
-    setGalleryForm({ ...emptyGalleryImage, sortOrder: galleryImages.length + 1 });
-    setShowGalleryForm(false);
-  }
   function updateGalleryImage(clientId: string, next: Partial<ProjectImageInput>) {
     setGalleryImages((current) =>
       current.map((image) => (image.clientId === clientId ? { ...image, ...next } : image))
@@ -573,19 +545,19 @@ export default function ProjectAiForm() {
           <div className="space-y-4">
             <label className="block space-y-1">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Material fuente / resumen tecnico
+                Material fuente / resumen técnico
               </span>
               <textarea
                 className={`${inputClass} min-h-32 resize-y leading-relaxed`}
                 disabled={busy}
                 value={input.description}
-                placeholder="Pega aca resumenes tecnicos, notas o fragmentos relevantes del proyecto."
+                placeholder="Pega aca resumenes técnicos, notas o fragmentos relevantes del proyecto."
                 onChange={(event) =>
                   setInput({ ...input, description: event.target.value })
                 }
               />
               <p className="text-xs leading-5 text-neutral-500">
-                Pega aca el resumen tecnico del proyecto, notas, fragmentos relevantes o una sintesis generada a partir de documentos tecnicos. Este texto no tiene que estar redactado para publicacion; sirve como base para que la IA comprenda el proyecto.
+                Pega aca el resumen técnico del proyecto, notas, fragmentos relevantes o una síntesis generada a partir de documentos técnicos. Este texto no tiene que estar redactado para publicación; sirve como base para que la IA comprenda el proyecto.
               </p>
             </label>
 
@@ -603,20 +575,20 @@ export default function ProjectAiForm() {
                 }
               />
               <p className="text-xs leading-5 text-neutral-500">
-                Pega aqui una sintesis elaborada a partir de las respuestas del formulario de los investigadores. Este texto ayudara a la IA a identificar que aspectos son mas importantes desde el punto de vista cientifico y comunicacional.
+                Pega aqui una sintesis elaborada a partir de las respuestas del formulario de los investigadores. Este texto ayudara a la IA a identificar que aspectos son mas importantes desde el punto de vista científico y comunicacional.
               </p>
             </label>
 
             <details className="group rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-neutral-200">
-                <span>Objetivo de comunicacion</span>
+                <span>Objetivo de comunicación</span>
                 <span className="inline-flex max-w-[65%] items-center gap-2 rounded-full border border-neutral-700 px-3 py-1 text-xs font-medium text-neutral-400">
                   <span className="truncate">{objectiveSummary}</span>
                   <span aria-hidden="true" className="transition group-open:rotate-180">v</span>
                 </span>
               </summary>
               <p className="mt-2 text-xs leading-5 text-neutral-500">
-                Selecciona que buscas lograr con la publicacion. Podes elegir mas de una opcion.
+                Selecciona que buscas lograr con la publicación. Podes elegir mas de una opción.
               </p>
 
               <div className="mt-3 grid gap-2">
@@ -650,7 +622,7 @@ export default function ProjectAiForm() {
                     className={`${inputClass} min-h-20 resize-y leading-relaxed`}
                     disabled={busy}
                     value={input.objective}
-                    placeholder="Ej: Presentar el proyecto a potenciales aliados tecnicos y educativos."
+                    placeholder="Ej: Presentar el proyecto a potenciales aliados técnicos y educativos."
                     onChange={(event) =>
                       setInput({ ...input, objective: event.target.value })
                     }
@@ -667,14 +639,14 @@ export default function ProjectAiForm() {
 
             <details className="group rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-neutral-200">
-                <span>Publico objetivo</span>
+                <span>Público objetivo</span>
                 <span className="inline-flex max-w-[65%] items-center gap-2 rounded-full border border-neutral-700 px-3 py-1 text-xs font-medium text-neutral-400">
                   <span className="truncate">{targetAudienceSummary}</span>
                   <span aria-hidden="true" className="transition group-open:rotate-180">v</span>
                 </span>
               </summary>
               <p className="mt-2 text-xs leading-5 text-neutral-500">
-                Elegi una o varias opciones. Si necesitas agregar un publico propio, selecciona la opcion personalizada.
+                Elegi una o varias opciones. Si necesitas agregar un público propio, selecciona la opción personalizada.
               </p>
 
               <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -702,13 +674,13 @@ export default function ProjectAiForm() {
               {customTargetAudienceSelected && (
                 <label className="mt-3 block space-y-1">
                   <span className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-                    Publico objetivo personalizado
+                    Público objetivo personalizado
                   </span>
                   <textarea
                     className={`${inputClass} min-h-20 resize-y leading-relaxed`}
                     disabled={busy}
                     value={input.targetAudience}
-                    placeholder="Ej.: Personas interesadas en la conservacion de bosques nativos."
+                    placeholder="Ej.: Personas interesadas en la conservación de bosques nativos."
                     onChange={(event) =>
                       setInput({ ...input, targetAudience: event.target.value })
                     }
@@ -730,7 +702,7 @@ export default function ProjectAiForm() {
               </span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 disabled={busy || uploadingMainImage}
                 className="sr-only"
                 onChange={(event) => onInputImageFileChange(event.target.files?.[0])}
@@ -743,7 +715,16 @@ export default function ProjectAiForm() {
                 <button type="button" disabled={busy || uploadingMainImage} onClick={clearInputImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
               )}
             </label>
-
+            {inputImageUrl && (
+              <figure className="w-40 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70 sm:w-44">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={inputImageUrl}
+                  alt="Imagen principal del proyecto"
+                  className="aspect-video w-full object-cover"
+                />
+              </figure>
+            )}
           </div>
 
           <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
@@ -752,7 +733,7 @@ export default function ProjectAiForm() {
               <ol className="space-y-2 text-sm text-neutral-400">
                 <li>1. Brief</li>
                 <li>2. Borrador IA</li>
-                <li>3. Edicion manual</li>
+                <li>3. Edición manual</li>
                 <li>4. Guardado</li>
               </ol>
             </div>
@@ -766,122 +747,97 @@ export default function ProjectAiForm() {
               Galeria del proyecto
             </p>
             <h3 className="mt-1 text-base font-semibold text-neutral-100">
-              Imagenes asociadas
+              Imágenes asociadas
             </h3>
             <p className="mt-1 text-sm text-neutral-400">
-              La imagen principal se mantiene separada. Agrega aca imagenes adicionales para la galeria publica.
+              La imagen principal se mantiene separada. Agrega aca imágenes adicionales para la galeria publica.
             </p>
           </div>
 
           <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
               {galleryImages.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/40 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-3 2xl:col-span-4">
-                  Todavia no agregaste imagenes de galeria para este proyecto.
+                <div className="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/40 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-4">
+                  Todavia no agregaste imágenes de galeria para este proyecto.
                 </div>
               ) : (
                 galleryImages
                   .slice()
                   .sort((a, b) => normalizeSortOrder(a.sortOrder) - normalizeSortOrder(b.sortOrder))
-                  .map((image, index) => {
-                    const invalidSavedUrl = Boolean(image.imageUrl.trim()) && !getGalleryImageUrl(image.imageUrl);
-                    return (
-                      <article
-                        key={image.clientId}
-                        className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/60"
-                      >
-                        {getGalleryImageUrl(image.imageUrl) && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={getGalleryImageUrl(image.imageUrl)}
-                            alt={image.altText || image.caption || "Imagen de galeria"}
-                            className="aspect-video w-full object-cover"
+                  .map((image, index) => (
+                    <article
+                      key={image.clientId}
+                      className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/60"
+                    >
+                      {getGalleryImageUrl(image.imageUrl) && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={getGalleryImageUrl(image.imageUrl)}
+                          alt={image.altText || image.caption || "Imagen de galeria"}
+                          className="h-28 w-full object-cover"
+                        />
+                      )}
+                      <div className="space-y-2 p-2.5">
+                        <label className="block space-y-1">
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
+                            Texto alternativo
+                          </span>
+                          <input
+                            className={inputClass}
+                            disabled={busy}
+                            value={image.altText ?? ""}
+                            onChange={(event) =>
+                              updateGalleryImage(image.clientId, { altText: event.target.value })
+                            }
                           />
-                        )}
-                        <div className="space-y-2.5 p-2.5">
-                          <label className="block space-y-1">
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                              URL de imagen
-                            </span>
-                            <input
-                              className={inputClass}
-                              disabled={busy}
-                              value={image.imageUrl}
-                              onChange={(event) =>
-                                updateGalleryImage(image.clientId, { imageUrl: event.target.value, mediaAssetId: null })
-                              }
-                            />
-                            {invalidSavedUrl && (
-                              <p className="text-xs leading-5 text-yellow">
-                                Usa /img/... o una URL http(s). No se permiten rutas locales.
-                              </p>
-                            )}
-                          </label>
+                        </label>
 
-                          <label className="block space-y-1">
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                              Texto alternativo
-                            </span>
-                            <input
-                              className={inputClass}
-                              disabled={busy}
-                              value={image.altText ?? ""}
-                              onChange={(event) =>
-                                updateGalleryImage(image.clientId, { altText: event.target.value })
-                              }
-                            />
-                          </label>
+                        <label className="block space-y-1">
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
+                            Epigrafe
+                          </span>
+                          <textarea
+                            className={`${inputClass} min-h-16 resize-y leading-relaxed`}
+                            disabled={busy}
+                            value={image.caption ?? ""}
+                            onChange={(event) =>
+                              updateGalleryImage(image.clientId, { caption: event.target.value })
+                            }
+                          />
+                        </label>
 
-                          <label className="block space-y-1">
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                              Epigrafe
-                            </span>
-                            <textarea
-                              className={`${inputClass} min-h-16 resize-y leading-relaxed`}
-                              disabled={busy}
-                              value={image.caption ?? ""}
-                              onChange={(event) =>
-                                updateGalleryImage(image.clientId, { caption: event.target.value })
-                              }
-                            />
-                          </label>
-
-                          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-
-                            <div className="flex items-end gap-2">
-                              <button
-                                type="button"
-                                disabled={busy || index === 0}
-                                onClick={() => moveGalleryImage(image.clientId, -1)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
-                                aria-label="Subir imagen"
-                              >
-                                <ArrowUp className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                disabled={busy || index === galleryImages.length - 1}
-                                onClick={() => moveGalleryImage(image.clientId, 1)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
-                                aria-label="Bajar imagen"
-                              >
-                                <ArrowDown className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                disabled={busy}
-                                onClick={() => removeGalleryImage(image.clientId)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-900/70 text-red-200 hover:bg-red-950/50 disabled:opacity-40"
-                                aria-label="Eliminar imagen"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
+                        <div className="flex items-end gap-2">
+                          <button
+                            type="button"
+                            disabled={busy || index === 0}
+                            onClick={() => moveGalleryImage(image.clientId, -1)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
+                            aria-label="Subir imagen"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busy || index === galleryImages.length - 1}
+                            onClick={() => moveGalleryImage(image.clientId, 1)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
+                            aria-label="Bajar imagen"
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => removeGalleryImage(image.clientId)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-900/70 text-red-200 hover:bg-red-950/50 disabled:opacity-40"
+                            aria-label="Eliminar imagen"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
-                      </article>
-                    );
-                  })
+                      </div>
+                    </article>
+                  ))
               )}
               <button
                 type="button"
@@ -896,101 +852,35 @@ export default function ProjectAiForm() {
             </div>
 
             {showGalleryForm && (
-            <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-primary-light">
-                Agregar imagen
-              </h4>
-              <div className="mt-3 space-y-3">
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    URL de imagen
-                  </span>
-                  <input
-                    className={inputClass}
-                    disabled={busy}
-                    value={galleryForm.imageUrl}
-                    placeholder="/img/proyectos/galeria-1.jpg"
-                    onChange={(event) =>
-                      setGalleryForm((current) => ({ ...current, imageUrl: event.target.value, mediaAssetId: null }))
-                    }
-                  />
-                  {hasInvalidGalleryImageUrl && (
-                    <p className="text-xs leading-5 text-yellow">
-                      Usa /img/..., /api/media/... o una URL http(s). No se permiten rutas C:\.
-                    </p>
-                  )}
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Seleccionar imagen de galeria
-                  </span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp"
+              <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <label className="block flex-1 space-y-2">
+                    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
+                      <Upload className="h-4 w-4" />
+                      Elegir archivo
+                    </span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                      disabled={busy || uploadingGalleryImage}
+                      className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
+                      onChange={(event) => onGalleryImageFileChange(event.target.files)}
+                    />
+                    {uploadingGalleryImage && <p className="text-xs text-neutral-400">Subiendo imágenes...</p>}
+                  </label>
+                  <button
+                    type="button"
                     disabled={busy || uploadingGalleryImage}
-                    className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
-                    onChange={(event) => onGalleryImageFileChange(event.target.files)}
-                  />
-                  {uploadingGalleryImage && <p className="text-xs text-neutral-400">Subiendo imagenes...</p>}
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Texto alternativo
-                  </span>
-                  <input
-                    className={inputClass}
-                    disabled={busy}
-                    value={galleryForm.altText ?? ""}
-                    onChange={(event) =>
-                      setGalleryForm((current) => ({ ...current, altText: event.target.value }))
-                    }
-                  />
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Epigrafe
-                  </span>
-                  <textarea
-                    className={`${inputClass} min-h-24 resize-y leading-relaxed`}
-                    disabled={busy}
-                    value={galleryForm.caption ?? ""}
-                    onChange={(event) =>
-                      setGalleryForm((current) => ({ ...current, caption: event.target.value }))
-                    }
-                  />
-                </label>
-
-                <label className="block space-y-1">
-                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Orden
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    className={inputClass}
-                    disabled={busy}
-                    value={galleryForm.sortOrder ?? 0}
-                    onChange={(event) =>
-                      setGalleryForm((current) => ({ ...current, sortOrder: Number(event.target.value) }))
-                    }
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  disabled={!canAddGalleryImage || busy}
-                  onClick={addGalleryImage}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Plus className="h-4 w-4" />
-                  Agregar a galeria
-                </button>
+                    onClick={() => {
+                      setShowGalleryForm(false);
+                    }}
+                    className="inline-flex justify-center rounded-lg border border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-800 disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
-            </div>
             )}
           </div>
         </div>
@@ -1076,7 +966,7 @@ export default function ProjectAiForm() {
 
                         <label className="mt-3 block space-y-1">
                           <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                            Descripcion
+                            Descripción
                           </span>
                           <textarea
                             className={`${inputClass} min-h-20 resize-y leading-relaxed`}
@@ -1209,7 +1099,7 @@ export default function ProjectAiForm() {
 
                 <label className="block space-y-1">
                   <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                    Descripcion
+                    Descripción
                   </span>
                   <textarea
                     className={`${inputClass} min-h-24 resize-y leading-relaxed`}

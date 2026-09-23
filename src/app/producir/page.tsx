@@ -1,55 +1,24 @@
 import type { Metadata } from "next";
-import { Sprout } from "lucide-react";
-import PillarPage from "@/components/pillars/PillarPage";
+import ProducirPageContent from "@/components/pillars/ProducirPageContent";
+import { ogImage, siteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Producir | Reserva Natural Lago Escondido",
   description:
     "Promovemos actividades productivas sustentables que respeten la naturaleza y a las comunidades.",
+  alternates: {
+    canonical: "/producir",
+  },
   openGraph: {
     title: "Producir | Reserva Natural Lago Escondido",
     description:
       "Promovemos actividades productivas sustentables que respeten la naturaleza y a las comunidades.",
-    images: ["/img/form.jpeg"],
+    url: siteUrl("/producir"),
+    images: [ogImage("/img/form.jpeg")],
+    type: "website",
   },
 };
 
 export default function ProducirPage() {
-  return (
-    <PillarPage
-      title="Producir"
-      intro="Promovemos actividades productivas sustentables que respeten la naturaleza y a las comunidades."
-      icon={Sprout}
-      iconTone="bg-[#FFC247]"
-      iconRing="bg-[#FFC247]/25"
-      body="Trabajamos en estandares de produccion artesanal y sustentable enfocados en potenciar el consumo de forma local y consciente. Cada proceso es disenado para minimizar el impacto ambiental y fortalecer el tejido social."
-      bullets={[
-        "Huerta agroecologica",
-        "Talleres de oficios y saberes",
-        "Produccion local",
-        "Energias renovables",
-      ]}
-      mainImage={{
-        src: "/img/form.jpeg",
-        alt: "Trabajo productivo en huerta agroecologica",
-      }}
-      relatedActivities={[
-        {
-          title: "Huerta agroecologica",
-          imageUrl: "/img/escuela.jpg",
-          alt: "Sistema de riego en una huerta",
-        },
-        {
-          title: "Produccion local",
-          imageUrl: "/img/particular.jpg",
-          alt: "Productos locales organizados en estanteria",
-        },
-        {
-          title: "Energias renovables",
-          imageUrl: "/img/agua.jpg",
-          alt: "Lago de la reserva rodeado de bosque",
-        },
-      ]}
-    />
-  );
+  return <ProducirPageContent />;
 }

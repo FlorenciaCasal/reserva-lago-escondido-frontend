@@ -9,7 +9,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
   const { id, action } = await params;
 
   if (!allowedActions.has(action)) {
-    return Response.json({ error: "Accion no permitida" }, { status: 400 });
+    return Response.json({ error: "Acción no permitida" }, { status: 400 });
   }
 
   const resp = await backendFetch(`/api/admin/news/${encodeURIComponent(id)}/${action}`, {

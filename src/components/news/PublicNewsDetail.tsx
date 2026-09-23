@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RevealOnView from "@/components/ui/RevealOnView";
 import type { News } from "@/types/news";
 
 function dateBadge(value?: string | null) {
@@ -33,36 +34,39 @@ export default function PublicNewsDetail({ news }: { news: News }) {
           <span className="text-neutral-700">{news.title}</span>
         </nav>
 
-        <header className="mt-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            {badge && (
-              <div className="flex h-[58px] w-[58px] shrink-0 flex-col items-center justify-center rounded-sm bg-[#2FABA3] text-white shadow-[0_12px_26px_-18px_rgba(47,171,163,0.9)]">
-                <span className="text-xl font-bold leading-none">{badge.day}</span>
-                <span className="mt-1 text-[10px] font-semibold uppercase leading-none">{badge.month}</span>
-                <span className="mt-1 text-[10px] leading-none text-white/85">{badge.year}</span>
+        <RevealOnView className="[&:not(.opacity-100)]:translate-y-4" delay={100}>
+          <header className="mt-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              {badge && (
+                <div className="flex h-[58px] w-[58px] shrink-0 flex-col items-center justify-center rounded-sm bg-[#2FABA3] text-white shadow-[0_12px_26px_-18px_rgba(47,171,163,0.9)]">
+                  <span className="text-xl font-bold leading-none">{badge.day}</span>
+                  <span className="mt-1 text-[10px] font-semibold uppercase leading-none">{badge.month}</span>
+                  <span className="mt-1 text-[10px] leading-none text-white/85">{badge.year}</span>
+                </div>
+              )}
+
+              <div>
+                <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-950 sm:text-[44px]">
+                  {news.title}
+                </h1>
+                <p className="mt-5 max-w-3xl text-lg leading-8 text-neutral-700">
+                  {news.summary}
+                </p>
               </div>
-            )}
-
-            <div>
-              <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-950 sm:text-[44px]">
-                {news.title}
-              </h1>
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-neutral-700">
-                {news.summary}
-              </p>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {news.imageUrl && (
-          <div className="mt-9 overflow-hidden rounded-lg bg-neutral-200 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={news.imageUrl} alt={news.title} className="aspect-[16/9] w-full object-cover sm:aspect-[16/7]" />
-          </div>
-        )}
+          {news.imageUrl && (
+            <div className="mt-9 overflow-hidden rounded-lg bg-neutral-200 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={news.imageUrl} alt={news.title} className="aspect-[16/9] w-full object-cover sm:aspect-[16/7]" />
+            </div>
+          )}
+        </RevealOnView>
 
-        <section className="mt-8 max-w-3xl">
-          <div className="space-y-6 text-base leading-8 text-neutral-800 sm:text-[17px] sm:leading-9">
+        <RevealOnView className="mt-8 max-w-3xl [&:not(.opacity-100)]:translate-y-4" delay={120}>
+        <section>
+          <div className="space-y-6 text-sm leading-7 text-neutral-800 md:text-base md:leading-8 lg:text-lg lg:leading-9">
             {paragraphs(news.content).map((paragraph, index) => (
               <p
                 key={paragraph}
@@ -73,6 +77,7 @@ export default function PublicNewsDetail({ news }: { news: News }) {
             ))}
           </div>
         </section>
+        </RevealOnView>
 
         {news.videoUrl && (
           <section className="mt-10 max-w-4xl">
@@ -83,15 +88,16 @@ export default function PublicNewsDetail({ news }: { news: News }) {
         )}
 
         {gallery.length > 0 && (
-          <section className="mt-14">
+          <RevealOnView className="mt-14 [&:not(.opacity-100)]:translate-y-4" delay={120}>
+          <section>
             <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 sm:grid sm:overflow-visible sm:pb-0 sm:grid-cols-3 sm:gap-5">
               {gallery.map((image) => (
-                <figure key={image.id} className="w-full shrink-0 snap-center overflow-hidden rounded-lg bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.35)] sm:w-auto sm:shrink">
+                <figure key={image.id} className="group w-full shrink-0 snap-center overflow-hidden rounded-lg bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.35)] transition-[transform,box-shadow] duration-300 ease-out sm:w-auto sm:shrink [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.42)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={image.imageUrl}
                     alt={image.altText || image.caption || news.title}
-                    className="aspect-[4/3] w-full object-cover"
+                    className="aspect-[4/3] w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
                   />
                   {image.caption && (
                     <figcaption className="p-3 text-sm leading-6 text-neutral-600">
@@ -107,6 +113,7 @@ export default function PublicNewsDetail({ news }: { news: News }) {
               ))}
             </div>
           </section>
+          </RevealOnView>
         )}
 
         <div className="mt-12">

@@ -189,7 +189,7 @@ export default function NewsSocialManager({ news }: Props) {
         <p className="text-xs font-medium uppercase tracking-wide text-primary-light">
           Redes sociales
         </p>
-        <h2 className="text-base font-semibold text-neutral-100">Preparacion manual</h2>
+        <h2 className="text-base font-semibold text-neutral-100">Preparación manual</h2>
       </div>
 
       <div className="border-b border-neutral-800 p-4">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listPublicNews } from "@/services/news";
+import type { HomeContent } from "@/types/home";
 
 function dateParts(value?: string | null) {
   const date = value ? new Date(value) : new Date();
@@ -12,7 +13,7 @@ function dateParts(value?: string | null) {
   };
 }
 
-export default async function HomeNewsPreview() {
+export default async function HomeNewsPreview({ content }: { content: HomeContent }) {
   const news = (await listPublicNews()).slice(0, 4);
   const [featuredNews, ...newsItems] = news;
 
@@ -25,14 +26,14 @@ export default async function HomeNewsPreview() {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-900">
-            Novedades
+            {content.newsTitle}
           </h2>
           <Link
             href="/novedades"
-            className="inline-flex text-xs font-bold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
+            className="group inline-flex text-xs font-bold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
           >
-            Ver todas las novedades
-            <span className="ml-2" aria-hidden="true">
+            {content.newsCtaLabel}
+            <span className="ml-2 transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">
               &rarr;
             </span>
           </Link>
@@ -40,14 +41,14 @@ export default async function HomeNewsPreview() {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
           <Link href={`/novedades/${featuredNews.slug}`} className="group block">
-          <article>
+          <article className="transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.35)]">
             <div className="relative aspect-[16/10] overflow-hidden bg-neutral-200">
               {featuredNews.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={featuredNews.imageUrl}
                   alt={featuredNews.title}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                  className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
                 />
               )}
               <div className="absolute left-4 top-4 flex h-14 w-12 flex-col items-center justify-center rounded-sm bg-primary text-white shadow-lg shadow-black/10">
@@ -68,7 +69,7 @@ export default async function HomeNewsPreview() {
 
           <div className="space-y-5">
             {newsItems.map((item) => (
-              <Link key={item.id} href={`/novedades/${item.slug}`} className="grid grid-cols-[44px_minmax(0,1fr)] gap-4">
+              <Link key={item.id} href={`/novedades/${item.slug}`} className="group grid grid-cols-[44px_minmax(0,1fr)] gap-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white">
                   <span className="text-xs font-bold uppercase">{dateParts(item.publishedAt).day}</span>
                 </div>
@@ -76,7 +77,7 @@ export default async function HomeNewsPreview() {
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
                     Novedad
                   </p>
-                  <h3 className="mt-1 text-sm font-semibold text-neutral-900">
+                  <h3 className="mt-1 text-sm font-semibold text-neutral-900 transition-colors [@media(hover:hover)]:group-hover:text-primary-dark">
                     {item.title}
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-neutral-700">

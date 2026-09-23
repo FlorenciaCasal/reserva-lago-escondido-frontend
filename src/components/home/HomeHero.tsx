@@ -1,47 +1,27 @@
 import Image from "next/image";
-import Link from "next/link";
+import type { HomeContent } from "@/types/home";
 
-export default function HomeHero() {
+export default function HomeHero({ content }: { content: HomeContent }) {
   return (
-    <section className="relative isolate min-h-[520px] overflow-hidden bg-neutral-950 text-white sm:min-h-[600px] lg:min-h-[75vh]">
+    <section className="relative isolate min-h-[520px] overflow-hidden bg-neutral-950 text-white sm:min-h-[600px] lg:min-h-[44vh]">
       <Image
-        src="/img/home.jpeg"
+        src={content.heroImageUrl}
         alt="Reserva Natural Lago Escondido"
         fill
         priority
-        className="object-cover object-center"
+        className="object-cover object-center lg:object-[center_25%]"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/20" />
-
-      <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-start px-6 pb-16 pt-32 sm:min-h-[600px] sm:px-8 sm:pt-36 lg:min-h-[75vh] lg:pt-40">
-        <div className="max-w-[620px]">
-          <h1 className="text-[34px] font-semibold leading-tight text-white [text-shadow:0_3px_18px_rgba(0,0,0,0.55)] sm:text-[44px] lg:text-[50px]">
-            Preservar, producir y habitar la naturaleza de manera sustentable
+      <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-start px-6 pb-0 pt-80 sm:min-h-[70vh] sm:px-8 xl:px-0 lg:pb-10 lg:pt-66">
+        <div className="max-w-[590px]">
+          {/* <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-white/80 [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
+            Reserva Natural Lago Escondido
+          </p> */}
+          <h1 className="text-[34px] font-bold leading-[1.08] text-white [text-shadow:0_5px_30px_rgba(0,0,0,0.95)] sm:text-[40px] lg:text-[40px]">
+            {content.heroTitle}
           </h1>
-          <p className="mt-6 max-w-[560px] text-base font-medium leading-8 text-white/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.55)] sm:text-lg">
-            Somos un espacio protegido en el paraje El Foyel, Rio Negro. Conservamos bosques milenarios y protegemos la fauna a traves de proyectos de investigacion, produccion sustentable y educacion ambiental.
+          <p className="mt-2 max-w-[430px] text-base font-medium leading-7 text-white/90 [text-shadow:0_4px_24px_rgba(0,0,0,0.95)] sm:text-lg">
+            {content.heroSubtitle}
           </p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/visitas"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-dark"
-            >
-              Comenzar la reserva
-            </Link>
-            <Link
-              href="/proyectos"
-              className="inline-flex items-center justify-center rounded-full border border-white/70 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-neutral-950"
-            >
-              Ver proyectos
-            </Link>
-            <Link
-              href="/visitas"
-              className="inline-flex items-center justify-center rounded-full border border-white/40 px-5 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
-            >
-              Visitar
-            </Link>
-          </div>
         </div>
       </div>
     </section>

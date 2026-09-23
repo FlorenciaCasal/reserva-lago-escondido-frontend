@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 
 const tabs = [
-  { id: "descripcion", label: "Descripcion" },
+  { id: "descripcion", label: "Descripción" },
   { id: "avances", label: "Avances" },
-  { id: "galeria", label: "Galeria" },
+  { id: "galeria", label: "Galería" },
   { id: "documentos", label: "Documentos" },
 ];
 
