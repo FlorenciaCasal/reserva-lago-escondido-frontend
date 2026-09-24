@@ -23,7 +23,7 @@ export default function NewsWebPreview({
 }: Props) {
   const displayTitle = title.trim() || "Titulo de la novedad";
   const displaySummary = summary.trim() || "Resumen breve de la novedad para listados y tarjetas.";
-  const displayContent = content.trim() || "El contenido editable aparecera aca para revisar la publicación antes de guardarla.";
+  const displayContent = content.trim() || "El contenido editable aparecera aca para revisar la publicacion antes de guardarla.";
   const gallery = images.filter((image) => image.imageUrl);
 
   return (
@@ -36,16 +36,16 @@ export default function NewsWebPreview({
         <img
           src={imageUrl}
           alt={displayTitle}
-          className="mb-5 aspect-video w-full rounded-lg border border-neutral-800 object-cover"
+          className="mb-5 h-32 w-full rounded-lg border border-neutral-800 object-cover sm:h-40"
         />
       )}
       <h3 className="text-xl font-semibold leading-tight text-white">{displayTitle}</h3>
       <p className="mt-3 text-sm leading-6 text-neutral-300">{displaySummary}</p>
-      <div className="mt-5 whitespace-pre-wrap border-t border-neutral-800 pt-5 text-sm leading-7 text-neutral-200">
+      <div className="mt-5 max-h-40 overflow-hidden whitespace-pre-wrap border-t border-neutral-800 pt-5 text-sm leading-7 text-neutral-200">
         {displayContent}
       </div>
       {videoUrl && (
-        <video controls className="mt-5 aspect-video w-full rounded-lg border border-neutral-800">
+        <video controls className="mt-5 h-32 w-full rounded-lg border border-neutral-800 object-cover sm:h-40">
           <source src={videoUrl} type="video/mp4" />
         </video>
       )}

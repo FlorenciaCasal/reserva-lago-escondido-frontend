@@ -5,6 +5,8 @@ import type {
   GeneratedProjectAdvanceDraft,
   GeneratedProjectDraft,
   MediaAsset,
+  MediaGalleryItem,
+  MediaGalleryItemInput,
   ProjectAdvance,
   ProjectAdvanceInput,
   Project,
@@ -243,6 +245,97 @@ export async function deleteProjectAdvance(projectId: string, advanceId: string)
           ? data.message
           : `Error ${res.status}`;
     throw new Error(message);
+  }
+}
+
+export async function listAdminProjectGallery(projectId: string): Promise<MediaGalleryItem[]> {
+  const res = await fetch(`/api/admin/projects/${projectId}/gallery`, { cache: "no-store" });
+  return parseJson<MediaGalleryItem[]>(res);
+}
+
+export async function createProjectGalleryItem(
+  projectId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/projects/${projectId}/gallery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function updateProjectGalleryItem(
+  projectId: string,
+  itemId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/projects/${projectId}/gallery/${itemId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function deleteProjectGalleryItem(projectId: string, itemId: string): Promise<void> {
+  const res = await fetch(`/api/admin/projects/${projectId}/gallery/${itemId}`, { method: "DELETE" });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(typeof data?.message === "string" ? data.message : `Error ${res.status}`);
+  }
+}
+
+export async function listAdminProjectAdvanceGallery(
+  projectId: string,
+  advanceId: string
+): Promise<MediaGalleryItem[]> {
+  const res = await fetch(`/api/admin/projects/${projectId}/advances/${advanceId}/gallery`, { cache: "no-store" });
+  return parseJson<MediaGalleryItem[]>(res);
+}
+
+export async function createProjectAdvanceGalleryItem(
+  projectId: string,
+  advanceId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/projects/${projectId}/advances/${advanceId}/gallery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function updateProjectAdvanceGalleryItem(
+  projectId: string,
+  advanceId: string,
+  itemId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/projects/${projectId}/advances/${advanceId}/gallery/${itemId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function deleteProjectAdvanceGalleryItem(
+  projectId: string,
+  advanceId: string,
+  itemId: string
+): Promise<void> {
+  const res = await fetch(`/api/admin/projects/${projectId}/advances/${advanceId}/gallery/${itemId}`, { method: "DELETE" });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(typeof data?.message === "string" ? data.message : `Error ${res.status}`);
   }
 }
 

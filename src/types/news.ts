@@ -1,4 +1,4 @@
-import type { MediaAsset } from "@/types/project";
+import type { MediaAsset, MediaGalleryItem } from "@/types/project";
 
 export type NewsStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export type SocialPlatform = "INSTAGRAM" | "FACEBOOK";
@@ -31,6 +31,7 @@ export type News = {
   createdAt?: string;
   updatedAt?: string;
   images?: NewsImage[];
+  gallery?: MediaGalleryItem[];
 };
 
 export type CreateNewsInput = {

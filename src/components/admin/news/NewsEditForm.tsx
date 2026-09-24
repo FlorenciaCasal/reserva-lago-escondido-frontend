@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Eye, EyeOff, Save, Upload } from "lucide-react";
 import NewsGalleryManager from "@/components/admin/news/NewsGalleryManager";
 import NewsSocialManager from "@/components/admin/news/NewsSocialManager";
-import NewsWebPreview from "@/components/admin/news/NewsWebPreview";
 import { createNews, getAdminNews, updateNews, uploadNewsImage, uploadNewsVideo } from "@/services/news";
 import type { News, NewsStatus, UpdateNewsInput } from "@/types/news";
 
@@ -228,7 +227,7 @@ export default function NewsEditForm({ newsId }: Props) {
             {isCreate ? "Crear novedad" : "Editar novedad"}
           </h1>
           <p className="mt-2 text-sm text-neutral-400">
-            Gestiona contenido, publicación, imagen principal, video y galería.
+            Gestiona contenido, publicacion, imagen principal, video y galeria.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -312,7 +311,7 @@ export default function NewsEditForm({ newsId }: Props) {
         <aside className="space-y-6">
           <section className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-light">
-              Configuración
+              Configuracion
             </h2>
             <div className="mt-4 space-y-4">
               <label className="block space-y-1">
@@ -418,35 +417,24 @@ export default function NewsEditForm({ newsId }: Props) {
         </aside>
       </div>
 
-      <NewsWebPreview
-        title={form.title}
-        summary={form.summary}
-        content={form.content}
-        slug={form.slug}
-        imageUrl={imageUrl}
-        videoUrl={videoUrl}
-        images={news?.images ?? []}
-      />
-
       <div className="flex flex-wrap gap-2 text-xs text-neutral-400">
         <span className="inline-flex items-center gap-1">
           {currentStatus === "PUBLISHED" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
           {newsStatusOptions[currentStatus][0]?.label ?? currentStatus}
         </span>
-        {news?.updatedAt && <span>Última actualización: {new Date(news.updatedAt).toLocaleString("es-AR")}</span>}
+        {news?.updatedAt && <span>Ultima actualizacion: {new Date(news.updatedAt).toLocaleString("es-AR")}</span>}
       </div>
 
       {!news && (
         <div className="rounded-xl border border-neutral-800 bg-neutral-950/70 p-4 text-sm leading-6 text-neutral-300">
-          Para cargar galerÍa, primero guarda la novedad.
+          Para cargar galeria, primero guarda la novedad.
         </div>
       )}
 
+      {news && <NewsGalleryManager newsId={news.id} />}
+
       {news && (
-        <>
-          <NewsGalleryManager newsId={news.id} />
-          <NewsSocialManager news={news} />
-        </>
+        <NewsSocialManager news={news} />
       )}
 
       {(uploadingImage || uploadingVideo) && (

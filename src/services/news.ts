@@ -13,6 +13,7 @@ import type {
   SocialPlatform,
   UpdateNewsInput,
 } from "@/types/news";
+import type { MediaGalleryItem, MediaGalleryItemInput } from "@/types/project";
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => null);
@@ -193,6 +194,47 @@ export async function deleteNewsImage(newsId: string, imageId: string): Promise<
           ? data.message
           : `Error ${res.status}`;
     throw new Error(message);
+  }
+}
+
+export async function listAdminNewsGallery(newsId: string): Promise<MediaGalleryItem[]> {
+  const res = await fetch(`/api/admin/news/${newsId}/gallery`, { cache: "no-store" });
+  return parseJson<MediaGalleryItem[]>(res);
+}
+
+export async function createNewsGalleryItem(
+  newsId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/news/${newsId}/gallery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function updateNewsGalleryItem(
+  newsId: string,
+  itemId: string,
+  input: MediaGalleryItemInput
+): Promise<MediaGalleryItem> {
+  const res = await fetch(`/api/admin/news/${newsId}/gallery/${itemId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  return parseJson<MediaGalleryItem>(res);
+}
+
+export async function deleteNewsGalleryItem(newsId: string, itemId: string): Promise<void> {
+  const res = await fetch(`/api/admin/news/${newsId}/gallery/${itemId}`, { method: "DELETE" });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(typeof data?.message === "string" ? data.message : `Error ${res.status}`);
   }
 }
 

@@ -27,8 +27,37 @@ export type Project = {
   archivedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
-  gallery?: ProjectImage[];
+  gallery?: MediaGalleryItem[];
   documents?: ProjectDocument[];
+};
+
+export type MediaGalleryItem = {
+  id: string;
+  ownerId: string;
+  kind: "IMAGE" | "VIDEO";
+  sourceType: "MEDIA_ASSET" | "EXTERNAL_YOUTUBE";
+  mediaAssetId?: string | null;
+  url: string;
+  externalProvider?: "YOUTUBE" | null;
+  externalVideoId?: string | null;
+  embedUrl?: string | null;
+  thumbnailUrl?: string | null;
+  caption?: string | null;
+  altText?: string | null;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type MediaGalleryItemInput = {
+  kind: "IMAGE" | "VIDEO";
+  sourceType: "MEDIA_ASSET" | "EXTERNAL_YOUTUBE";
+  mediaAssetId?: string | null;
+  youtubeUrl?: string | null;
+  externalVideoId?: string | null;
+  caption?: string | null;
+  altText?: string | null;
+  sortOrder?: number;
 };
 
 export type ProjectImage = {
@@ -55,6 +84,7 @@ export type ProjectAdvance = {
   videoAssetId?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  gallery?: MediaGalleryItem[];
 };
 
 export type ProjectDocument = {
