@@ -1,49 +1,16 @@
 import Link from "next/link";
 import type React from "react";
+import PublicMediaCarousel from "@/components/media/PublicMediaCarousel";
 import ProjectDetailTabs from "@/components/projects/ProjectDetailTabs";
 import RevealOnView from "@/components/ui/RevealOnView";
-import type { Project, ProjectAdvance } from "@/types/project";
-
-function PlaceholderCard({
-  title,
-  text,
-}: {
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-[14px] border border-neutral-200 bg-white p-6 shadow-[0_14px_34px_-30px_rgba(15,23,42,0.35)]">
-      <h3 className="font-serif text-xl font-semibold text-neutral-900">{title}</h3>
-      <p className="mt-3 text-[17px] leading-8 text-neutral-700">{text}</p>
-    </div>
-  );
-}
-
+import type { MediaGalleryItem, Project, ProjectAdvance } from "@/types/project";
 function isUploadedVideo(videoUrl?: string | null, videoAssetId?: string | null) {
   const url = videoUrl?.trim();
   return Boolean(videoAssetId) || Boolean(url?.startsWith("/api/media/"));
 }
 
-function repairMojibake(value?: string | null) {
-  if (!value) return "";
-  if (!/[ÃÂâ€]/.test(value)) return value;
-
-  let repaired = value;
-  for (let index = 0; index < 3; index += 1) {
-    try {
-      const next = decodeURIComponent(escape(repaired));
-      if (next === repaired) break;
-      repaired = next;
-    } catch {
-      break;
-    }
-  }
-
-  return repaired;
-}
-
 function renderLinkedText(value?: string | null) {
-  const text = repairMojibake(value);
+  const text = value ?? "";
   const urlPattern = /(https?:\/\/[^\s<>"']+)/g;
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
@@ -83,6 +50,39 @@ function formatTimelineDate(value: string) {
   };
 }
 
+function advanceMediaItems(advance: ProjectAdvance): MediaGalleryItem[] {
+  if (advance.gallery && advance.gallery.length > 0) return advance.gallery;
+
+  const legacy: MediaGalleryItem[] = [];
+  if (advance.imageUrl) {
+    legacy.push({
+      id: `${advance.id}-legacy-image`,
+      ownerId: advance.id,
+      kind: "IMAGE",
+      sourceType: "MEDIA_ASSET",
+      mediaAssetId: advance.imageAssetId ?? null,
+      url: advance.imageUrl,
+      caption: null,
+      altText: advance.title,
+      sortOrder: 0,
+    });
+  }
+  if (advance.videoUrl) {
+    legacy.push({
+      id: `${advance.id}-legacy-video`,
+      ownerId: advance.id,
+      kind: "VIDEO",
+      sourceType: "MEDIA_ASSET",
+      mediaAssetId: advance.videoAssetId ?? null,
+      url: advance.videoUrl,
+      caption: null,
+      altText: null,
+      sortOrder: 1,
+    });
+  }
+  return legacy;
+}
+
 export default function PublicProjectDetail({
   project,
   advances,
@@ -92,9 +92,12 @@ export default function PublicProjectDetail({
 }) {
   const gallery = project.gallery ?? [];
   const documents = project.documents ?? [];
-  const projectTitle = repairMojibake(project.title);
-  const projectSummary = repairMojibake(project.summary);
+  const projectTitle = project.title;
+  const projectSummary = project.summary;
   const hasProjectVideo = Boolean(project.videoUrl?.trim());
+  const hasGallery = gallery.length > 0;
+  const hasAdvances = advances.length > 0;
+  const hasDocuments = documents.length > 0;
 
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
@@ -180,21 +183,24 @@ export default function PublicProjectDetail({
         </RevealOnView>
       </section>
 
-      <section id="avances" className="mx-auto max-w-7xl px-4 py-4 sm:px-8">
-        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
-          <div>
-            <h2 className="font-serif text-3xl font-semibold text-neutral-900">Avances del proyecto</h2>
-            <p className="mt-4 max-w-3xl text-base leading-8 text-neutral-700 sm:text-[17px]">
-              Seguimiento cronológico de los principales hitos y acciones realizadas en el marco de este proyecto.
-            </p>
-          </div>
+      {hasGallery && (
+        <section id="galeria" className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+          <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={120}>
+            <PublicMediaCarousel items={gallery} imageAltFallback={`Imagen del proyecto ${projectTitle}`} />
+          </RevealOnView>
+        </section>
+      )}
 
-          {advances.length === 0 ? (
-            <PlaceholderCard
-              title="Todavía no hay avances publicados"
-              text="Cuando el proyecto comparta sus primeros hitos, esta línea de tiempo mostrará cada avance con fecha, descripción y recursos asociados."
-            />
-          ) : (
+      {hasAdvances && (
+        <section id="avances" className="mx-auto max-w-7xl px-4 py-4 sm:px-8">
+          <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
+            <div>
+              <h2 className="font-serif text-3xl font-semibold text-neutral-900">Avances del proyecto</h2>
+              <p className="mt-4 max-w-3xl text-base leading-8 text-neutral-700 sm:text-[17px]">
+                Seguimiento cronológico de los principales hitos y acciones realizadas en el marco de este proyecto.
+              </p>
+            </div>
+
             <div className="relative space-y-8 pl-7 sm:space-y-10 sm:pl-14">
               <div className="absolute left-4 top-0 h-full w-px bg-neutral-200 sm:left-7" />
               {advances.map((advance, index) => {
@@ -213,44 +219,17 @@ export default function PublicProjectDetail({
                     </div>
 
                     <div className="rounded-[14px] border border-neutral-200 bg-white p-4 shadow-[0_16px_38px_-32px_rgba(15,23,42,0.35)] sm:p-6">
-                      <h3 className="font-serif text-xl font-semibold text-neutral-900 sm:text-2xl">{repairMojibake(advance.title)}</h3>
+                      <h3 className="font-serif text-xl font-semibold text-neutral-900 sm:text-2xl">{advance.title}</h3>
                       <p className="mt-3 whitespace-pre-wrap text-base leading-7 text-neutral-700 sm:text-[17px] sm:leading-8">
                         {renderLinkedText(advance.description)}
                       </p>
-
-                      {(advance.imageUrl || advance.videoUrl) && (
-                        <div className="mt-5 grid gap-4 sm:mt-6 sm:grid-cols-2">
-                          {advance.imageUrl && (
-                            <div className="overflow-hidden rounded-[10px] border border-neutral-200 bg-neutral-100">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={advance.imageUrl}
-                                alt={repairMojibake(advance.title)}
-                                className="aspect-[16/10] w-full object-cover"
-                              />
-                            </div>
-                          )}
-                          {advance.videoUrl && (
-                            isUploadedVideo(advance.videoUrl, advance.videoAssetId) ? (
-                              <div className="overflow-hidden rounded-[10px] border border-neutral-200 bg-black">
-                                <video
-                                  src={advance.videoUrl}
-                                  controls
-                                  preload="metadata"
-                                  className="aspect-[16/10] w-full bg-black object-contain"
-                                />
-                              </div>
-                            ) : (
-                              <a
-                                href={advance.videoUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex min-h-40 items-center justify-center rounded-[10px] border border-neutral-200 bg-neutral-50 px-6 text-center text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100"
-                              >
-                                Ver video relacionado
-                              </a>
-                            )
-                          )}
+                      {advanceMediaItems(advance).length > 0 && (
+                        <div className="mt-5 sm:mt-6">
+                          <PublicMediaCarousel
+                            compact
+                            items={advanceMediaItems(advance)}
+                            imageAltFallback={advance.title}
+                          />
                         </div>
                       )}
                     </div>
@@ -258,60 +237,14 @@ export default function PublicProjectDetail({
                 );
               })}
             </div>
-          )}
-        </RevealOnView>
-      </section>
+          </RevealOnView>
+        </section>
+      )}
 
-      <section id="galeria" className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
-        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={120}>
-          <h2 className="font-serif text-3xl font-semibold text-neutral-900">Galeria</h2>
-          {gallery.length === 0 ? (
-            <PlaceholderCard
-              title="Todavia no hay imágenes en la galeria"
-              text="Cuando se publiquen imágenes asociadas a este proyecto, se mostrarán aqui como registro visual de sus acciones y avances."
-            />
-          ) : (
-            <div className="grid gap-5 md:grid-cols-3">
-              {gallery.map((image) => {
-                const imageCaption = repairMojibake(image.caption);
-                const imageAlt =
-                  repairMojibake(image.altText) ||
-                  imageCaption ||
-                  `Imagen del proyecto ${projectTitle}`;
-
-                return (
-                  <figure
-                    key={image.id}
-                    className="group overflow-hidden rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.34)] transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.42)]"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={image.imageUrl}
-                      alt={imageAlt}
-                      className="aspect-video w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
-                    />
-                    {imageCaption && (
-                      <figcaption className="px-4 py-3 text-sm leading-6 text-neutral-700">
-                        {imageCaption}
-                      </figcaption>
-                    )}
-                  </figure>
-                );
-              })}
-            </div>
-          )}
-        </RevealOnView>
-      </section>
-
-      <section id="documentos" className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
-        <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
-          <h2 className="font-serif text-3xl font-semibold text-neutral-900">Documentos</h2>
-          {documents.length === 0 ? (
-            <PlaceholderCard
-              title="Todavía no hay documentos publicados"
-              text="Cuando se publiquen fichas técnicas, informes o materiales de apoyo, se mostrarán en esta sección."
-            />
-          ) : (
+      {hasDocuments && (
+        <section id="documentos" className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
+          <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
+            <h2 className="font-serif text-3xl font-semibold text-neutral-900">Documentos</h2>
             <div className="grid min-w-0 gap-4 md:grid-cols-2">
               {documents.map((document) => (
                 <article
@@ -326,7 +259,7 @@ export default function PublicProjectDetail({
                         </p>
                       )}
                       <h3 className="mt-2 overflow-hidden break-words font-serif text-xl font-semibold text-neutral-900">
-                        {repairMojibake(document.title)}
+                        {document.title}
                       </h3>
                     </div>
                   </div>
@@ -346,9 +279,9 @@ export default function PublicProjectDetail({
                 </article>
               ))}
             </div>
-          )}
-        </RevealOnView>
-      </section>
+          </RevealOnView>
+        </section>
+      )}
     </main>
   );
 }

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import PublicMediaCarousel from "@/components/media/PublicMediaCarousel";
 import RevealOnView from "@/components/ui/RevealOnView";
+import type { MediaGalleryItem } from "@/types/project";
 import type { News } from "@/types/news";
 
 function dateBadge(value?: string | null) {
@@ -19,9 +21,44 @@ function paragraphs(content: string) {
     .filter(Boolean);
 }
 
+function newsMediaItems(news: News): MediaGalleryItem[] {
+  if (news.gallery && news.gallery.length > 0) return news.gallery;
+
+  const legacy: MediaGalleryItem[] = [];
+  if (news.videoUrl) {
+    legacy.push({
+      id: `${news.id}-legacy-video`,
+      ownerId: news.id,
+      kind: "VIDEO",
+      sourceType: "MEDIA_ASSET",
+      mediaAssetId: news.videoAssetId ?? null,
+      url: news.videoUrl,
+      caption: null,
+      altText: null,
+      sortOrder: 0,
+    });
+  }
+  for (const image of news.images ?? []) {
+    legacy.push({
+      id: image.id,
+      ownerId: news.id,
+      kind: "IMAGE",
+      sourceType: "MEDIA_ASSET",
+      mediaAssetId: image.mediaAssetId ?? null,
+      url: image.imageUrl,
+      caption: image.caption ?? null,
+      altText: image.altText ?? null,
+      sortOrder: (image.sortOrder ?? 0) + 1,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt,
+    });
+  }
+  return legacy;
+}
+
 export default function PublicNewsDetail({ news }: { news: News }) {
   const badge = dateBadge(news.publishedAt);
-  const gallery = news.images ?? [];
+  const gallery = newsMediaItems(news);
 
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
@@ -79,40 +116,11 @@ export default function PublicNewsDetail({ news }: { news: News }) {
         </section>
         </RevealOnView>
 
-        {news.videoUrl && (
-          <section className="mt-10 max-w-4xl">
-            <video controls className="aspect-video w-full rounded-lg bg-neutral-950 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
-              <source src={news.videoUrl} type="video/mp4" />
-            </video>
-          </section>
-        )}
-
         {gallery.length > 0 && (
           <RevealOnView className="mt-14 [&:not(.opacity-100)]:translate-y-4" delay={120}>
-          <section>
-            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 sm:grid sm:overflow-visible sm:pb-0 sm:grid-cols-3 sm:gap-5">
-              {gallery.map((image) => (
-                <figure key={image.id} className="group w-full shrink-0 snap-center overflow-hidden rounded-lg bg-white shadow-[0_14px_34px_-30px_rgba(15,23,42,0.35)] transition-[transform,box-shadow] duration-300 ease-out sm:w-auto sm:shrink [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.42)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={image.imageUrl}
-                    alt={image.altText || image.caption || news.title}
-                    className="aspect-[4/3] w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
-                  />
-                  {image.caption && (
-                    <figcaption className="p-3 text-sm leading-6 text-neutral-600">
-                      {image.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              ))}
-            </div>
-            <div className="mt-2 flex justify-center gap-2 sm:hidden" aria-hidden="true">
-              {gallery.map((image) => (
-                <span key={image.id} className="h-1.5 w-1.5 rounded-full bg-[#2FABA3]/70" />
-              ))}
-            </div>
-          </section>
+            <section>
+              <PublicMediaCarousel items={gallery} imageAltFallback={news.title} />
+            </section>
           </RevealOnView>
         )}
 
