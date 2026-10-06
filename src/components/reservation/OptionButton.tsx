@@ -25,6 +25,7 @@ export function OptionButton({
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={handle}
       className={`
         w-full overflow-hidden text-left rounded-2xl border
