@@ -14,7 +14,7 @@ import { formatVisitorsFromForm } from "./utils";
 import { getPublicBookingFlags, type BookingFlags } from "@/services/admin";
 import { useToast } from "@/components/ui/Toast";
 import { getAvailabilityByDate } from "@/services/availibility";
-import hasMin48Hours from "@/utils/date";
+import { hasMin7CalendarDays } from "@/utils/date";
 
 
 // ⭐ Payload legacy que tu page.tsx necesita
@@ -38,6 +38,7 @@ export default function ReservationWizard({
     setValue,
     watch,
     trigger,
+    resetField,
     formState: { errors, isValid },
   } = useForm<WizardStepData>({
     mode: "onChange",
@@ -48,13 +49,12 @@ export default function ReservationWizard({
   const [open, setOpen] = useState<Panel>(null);
   const [flags, setFlags] = useState<BookingFlags | null>(null);
   const toast = useToast();
-  const { resetField, /* ... */ } = useForm<WizardStepData>({ /* ... */ });
 
   // cargar flags del backend
   useEffect(() => {
     getPublicBookingFlags()
       .then(setFlags)
-      .catch(() => setFlags({ individualEnabled: true, schoolEnabled: true })); // fallback permisivo
+      .catch(() => setFlags(null));
   }, []);
 
   const tipoVisitante = watch("tipoVisitante");
@@ -63,10 +63,13 @@ export default function ReservationWizard({
   const adultos = watch("adultos");
   const ninos = watch("ninos");
   const bebes = watch("bebes");
-  const loadingFlags = flags === null;
-  const schoolOff = flags ? !flags.schoolEnabled : true;
+  const individualEnabled = flags?.individualEnabled === true;
+  const schoolEnabled = flags?.schoolEnabled === true;
+  const individualOff = !individualEnabled;
+  const schoolOff = !schoolEnabled;
   const isSchool = tipoVisitante === "INSTITUCION_EDUCATIVA";
-  const isSchoolSoldOut = isSchool && schoolOff;
+  const isIndividual = tipoVisitante === "PARTICULAR";
+  const selectedTypeOff = (isSchool && schoolOff) || (isIndividual && individualOff);
   // válido si hay al menos 1 adulto (misma regla que Yup)
   const visitorsValid = adultos >= 1;
 
@@ -80,22 +83,14 @@ export default function ReservationWizard({
 
   // Bloqueo provisorio si aún no cargaron flags y el usuario marcó escuela
   useEffect(() => {
-    if (!flags && tipoVisitante === "INSTITUCION_EDUCATIVA") {
+    if (selectedTypeOff) {
       resetField("tipoVisitante");
       resetField("fechaISO");
-      toast(" En este momento no tenemos disponibilidad para instituciones educativas.")
+      if (isSchool) {
+        toast(" En este momento no tenemos disponibilidad para instituciones educativas.")
+      }
     }
-  }, [flags, tipoVisitante, resetField, toast]);
-
-  // Bloqueo definitivo si flags dicen que escuela está deshabilitada
-  useEffect(() => {
-    if (flags && schoolOff && isSchool) {
-      resetField("tipoVisitante");
-      resetField("fechaISO");
-      // toast("Por ahora no se aceptan reservas para instituciones educativas.");
-      toast(" En este momento no tenemos disponibilidad para instituciones educativas.")
-    }
-  }, [flags, schoolOff, isSchool, resetField, toast]);
+  }, [selectedTypeOff, isSchool, resetField, toast]);
 
   // const circuitoInfo = useMemo(
   //   () => CIRCUITS.find((c) => c.key === (circuito as CircuitoKey)),
@@ -108,6 +103,9 @@ export default function ReservationWizard({
     if (data.tipoVisitante === "INSTITUCION_EDUCATIVA" && schoolOff) {
       toast("Por el momento no se aceptan reservas para instituciones educativas.");
       return;                       // ✅ aborta el submit sí o sí
+    }
+    if (data.tipoVisitante === "PARTICULAR" && individualOff) {
+      return;
     }
     onComplete?.({
       visitorType: data.tipoVisitante,
@@ -156,7 +154,7 @@ export default function ReservationWizard({
           value={fechaISO}
           onClick={() => setOpen("DATE")}
           // disabled={!circuito}
-          disabled={!tipoVisitante || isSchoolSoldOut}
+          disabled={!tipoVisitante || selectedTypeOff}
           error={!!errors.fechaISO}
           className="w-full rounded-xl border border-primary bg-transparent text-neutral-900 hover:border-primary hover:bg-primary-50/40 transition"
         />
@@ -189,7 +187,9 @@ export default function ReservationWizard({
           title="Particular"
           subtitle="Individual, familia o amigos."
           imageSrc="/img/particular.jpg"
+          disabled={individualOff}
           onSelect={() => {
+            if (individualOff) return;
             setValue("tipoVisitante", "PARTICULAR", { shouldValidate: true });
             setOpen(null);
           }}
@@ -198,7 +198,7 @@ export default function ReservationWizard({
           title="Institución educativa"
           subtitle={schoolOff ? "Temporalmente no disponible" : "Escuelas, universidades o grupos educativos."}
           imageSrc="/img/escuela.jpg"
-          disabled={loadingFlags || schoolOff}
+          disabled={schoolOff}
           onDisabledClick={() => toast("En este momento no tenemos disponibilidad para instituciones educativas.")}
           onSelect={() => {
             if (schoolOff) {              // 🚫 guard extra por si se intenta forzar
@@ -270,9 +270,9 @@ export default function ReservationWizard({
             selectedISO={typeof fechaISO === "string" ? fechaISO : undefined}
             onSelectISO={async (iso) => {
 
-              //  Regla de 48 horas
-              if (!hasMin48Hours(iso)) {
-                toast("Las reservas deben realizarse con al menos 48 horas de anticipación.");
+              //  Regla de 7 días corridos
+              if (!hasMin7CalendarDays(iso)) {
+                toast("Las visitas deben solicitarse con al menos 7 días de anticipación.");
                 return;
               }
 
@@ -295,7 +295,7 @@ export default function ReservationWizard({
             }}
           />
           <p className="text-xs text-neutral-500">
-            Las reservas deben realizarse con al menos 48 horas de anticipación.
+            Las visitas deben solicitarse con al menos 7 días de anticipación.
           </p>
           {/* <p className="text-sm text-white/70"> */}
           <p className="text-sm text-neutral-600">

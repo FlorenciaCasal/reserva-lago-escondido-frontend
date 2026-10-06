@@ -5,6 +5,7 @@ import 'react-day-picker/dist/style.css';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { addMonths, subMonths, isBefore, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getMinimumVisitDateISO } from '@/utils/date';
 
 type Props = {
     selectedISO?: string;                         // "YYYY-MM-DD"
@@ -45,6 +46,7 @@ export default function CalendarPicker({ selectedISO, onSelectISO }: Props) {
     const [loading, setLoading] = useState<boolean>(false);
 
     const selectedDate = selectedISO ? fromISODateLocal(selectedISO) : undefined;
+    const minimumVisitDateISO = getMinimumVisitDateISO();
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768);
@@ -146,6 +148,7 @@ export default function CalendarPicker({ selectedISO, onSelectISO }: Props) {
 
     // matcher función para react-day-picker
     const isDisabledMatcher = (d: Date) => disabledSet.has(toISO(d));
+    const isBeforeMinimumVisitDate = (d: Date) => toISO(d) < minimumVisitDateISO;
 
     return (
         <div className="flex justify-center">
@@ -172,6 +175,7 @@ export default function CalendarPicker({ selectedISO, onSelectISO }: Props) {
                                         components={{ Nav: () => <></> }}
                                         locale={es}
                                         disabled={[
+                                            isBeforeMinimumVisitDate,
                                             { before: new Date() },
                                             { dayOfWeek: [0, 6] }, // fds
                                             isDisabledMatcher,      // 👈 cupo 0 desde backend
@@ -214,6 +218,7 @@ export default function CalendarPicker({ selectedISO, onSelectISO }: Props) {
                             className="custom-daypicker"
                             locale={es}
                             disabled={[
+                                isBeforeMinimumVisitDate,
                                 { before: new Date() },
                                 { dayOfWeek: [0, 6] },
                                 isDisabledMatcher,        // 👈 cupo 0 desde backend
