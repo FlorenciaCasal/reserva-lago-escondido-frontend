@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import StructuredData from "@/components/seo/StructuredData";
 import PublicNewsDetail from "@/components/news/PublicNewsDetail";
-import { getPublicNewsBySlug } from "@/services/news";
+import { getPublicNewsBySlug, newsDisplayDate } from "@/services/news";
 import { newsArticleJsonLd, ogImage, siteUrl } from "@/lib/seo";
 
 type Props = {
@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const canonical = `/novedades/${news.slug}`;
+  const displayDate = newsDisplayDate(news);
 
   return {
     title: `${news.title} | Reserva Natural Lago Escondido`,
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: siteUrl(canonical),
       images: [ogImage(news.imageUrl)],
       type: "article",
-      publishedTime: news.publishedAt ?? undefined,
+      publishedTime: displayDate ?? undefined,
     },
   };
 }

@@ -81,6 +81,7 @@ export function newsArticleJsonLd({
   summary,
   slug,
   imageUrl,
+  editorialDate,
   publishedAt,
   updatedAt,
 }: {
@@ -88,10 +89,12 @@ export function newsArticleJsonLd({
   summary: string;
   slug: string;
   imageUrl?: string | null;
+  editorialDate?: string | null;
   publishedAt?: string | null;
   updatedAt?: string | null;
 }) {
   const canonical = siteUrl(`/novedades/${slug}`);
+  const displayDate = editorialDate || publishedAt || undefined;
 
   return {
     "@context": "https://schema.org",
@@ -99,8 +102,8 @@ export function newsArticleJsonLd({
     headline: title,
     description: summary,
     image: [siteUrl(imageUrl || defaultOgImage)],
-    datePublished: publishedAt || undefined,
-    dateModified: updatedAt || publishedAt || undefined,
+    datePublished: displayDate,
+    dateModified: updatedAt || displayDate,
     inLanguage: "es-AR",
     mainEntityOfPage: {
       "@type": "WebPage",

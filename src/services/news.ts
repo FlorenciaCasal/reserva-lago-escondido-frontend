@@ -45,13 +45,31 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}
 }
 
 function newsTime(value?: string | null) {
-  return value ? new Date(value).getTime() : 0;
+  return newsDate(value)?.getTime() ?? 0;
+}
+
+export function newsDisplayDate(news: Pick<News, "editorialDate" | "publishedAt" | "createdAt">) {
+  return news.editorialDate ?? news.publishedAt ?? news.createdAt ?? null;
+}
+
+export function newsDate(value?: string | null) {
+  if (!value) return null;
+
+  const localDateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (localDateMatch) {
+    const [, year, month, day] = localDateMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  return new Date(value);
 }
 
 function sortPublicNews(news: News[]) {
   return news
     .filter((item) => item.status === "PUBLISHED")
     .sort((a, b) => {
+      const editorialDiff = newsTime(b.editorialDate) - newsTime(a.editorialDate);
+      if (editorialDiff !== 0) return editorialDiff;
       const publishedDiff = newsTime(b.publishedAt) - newsTime(a.publishedAt);
       if (publishedDiff !== 0) return publishedDiff;
       return newsTime(b.createdAt) - newsTime(a.createdAt);

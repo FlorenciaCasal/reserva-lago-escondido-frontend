@@ -1,12 +1,13 @@
 import Link from "next/link";
 import PublicMediaCarousel from "@/components/media/PublicMediaCarousel";
 import RevealOnView from "@/components/ui/RevealOnView";
+import { newsDate, newsDisplayDate } from "@/services/news";
 import type { MediaGalleryItem } from "@/types/project";
 import type { News } from "@/types/news";
 
 function dateBadge(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
+  const date = newsDate(value);
+  if (!date) return null;
   return {
     day: new Intl.DateTimeFormat("es-AR", { day: "2-digit" }).format(date),
     month: new Intl.DateTimeFormat("es-AR", { month: "short" }).format(date).replace(".", ""),
@@ -57,7 +58,7 @@ function newsMediaItems(news: News): MediaGalleryItem[] {
 }
 
 export default function PublicNewsDetail({ news }: { news: News }) {
-  const badge = dateBadge(news.publishedAt);
+  const badge = dateBadge(newsDisplayDate(news));
   const gallery = newsMediaItems(news);
 
   return (

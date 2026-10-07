@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Archive, Eye, MoreVertical, Pencil, Plus, Trash2 } from "lucide-react";
-import { archiveNews, deleteNewsPermanently, listAdminNews, publishNews } from "@/services/news";
+import { archiveNews, deleteNewsPermanently, listAdminNews, newsDate, newsDisplayDate, publishNews } from "@/services/news";
 import TruncatedTitle from "@/components/admin/TruncatedTitle";
 import type { News, NewsStatus } from "@/types/news";
 
@@ -20,8 +20,9 @@ function statusClass(status: NewsStatus) {
 }
 
 function fmtDate(value?: string | null) {
-  if (!value) return "-";
-  return new Date(value).toLocaleDateString("es-AR");
+  const date = newsDate(value);
+  if (!date) return "-";
+  return date.toLocaleDateString("es-AR");
 }
 
 export default function NewsAdminList() {
@@ -171,7 +172,7 @@ export default function NewsAdminList() {
                         <span className={`rounded-full border px-2 py-1 ${statusClass(item.status)}`}>
                           {statusLabel(item.status)}
                         </span>
-                        <span>Publicado: {fmtDate(item.publishedAt)}</span>
+                        <span>Fecha: {fmtDate(newsDisplayDate(item))}</span>
                       </div>
                     </div>
                   </div>
@@ -230,7 +231,7 @@ export default function NewsAdminList() {
                 <tr>
                   <th className="w-[44%] px-3 py-3 sm:px-4">Novedad</th>
                   <th className="w-[16%] px-3 py-3 sm:px-4">Estado</th>
-                  <th className="w-[14%] px-3 py-3 sm:px-4">Publicado</th>
+                  <th className="w-[14%] px-3 py-3 sm:px-4">Fecha</th>
                   <th className="w-[18%] px-3 py-3 text-right sm:px-4">Acciones</th>
                 </tr>
               </thead>
@@ -258,7 +259,7 @@ export default function NewsAdminList() {
                           {statusLabel(item.status)}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-neutral-300 sm:px-4">{fmtDate(item.publishedAt)}</td>
+                      <td className="px-3 py-3 text-neutral-300 sm:px-4">{fmtDate(newsDisplayDate(item))}</td>
                       <td className="px-3 py-3 sm:px-4">
                         <div className="flex justify-end gap-1.5 sm:gap-2">
                           <Link

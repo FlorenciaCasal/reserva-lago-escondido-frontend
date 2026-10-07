@@ -1,19 +1,21 @@
 import Link from "next/link";
 import RevealOnView from "@/components/ui/RevealOnView";
+import { newsDate, newsDisplayDate } from "@/services/news";
 import type { News } from "@/types/news";
 
 function fmtDate(value?: string | null) {
-  if (!value) return "";
+  const date = newsDate(value);
+  if (!date) return "";
   return new Intl.DateTimeFormat("es-AR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function dateBadge(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
+  const date = newsDate(value);
+  if (!date) return null;
   return {
     day: new Intl.DateTimeFormat("es-AR", { day: "2-digit" }).format(date),
     month: new Intl.DateTimeFormat("es-AR", { month: "short" }).format(date).replace(".", ""),
@@ -52,7 +54,8 @@ export default function PublicNewsListing({ news }: { news: News[] }) {
             </div>
           ) : (
             news.map((item, index) => {
-              const badge = dateBadge(item.publishedAt);
+              const displayDate = newsDisplayDate(item);
+              const badge = dateBadge(displayDate);
 
               return (
                 <RevealOnView key={item.id} className="h-full" delay={Math.min(index, 3) * 90}>
@@ -82,7 +85,7 @@ export default function PublicNewsListing({ news }: { news: News[] }) {
 
                     <div className="flex flex-col justify-center px-6 py-6 sm:px-8 md:min-h-56 lg:px-10">
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">
-                        {fmtDate(item.publishedAt)}
+                        {fmtDate(displayDate)}
                       </p>
                       <h2 className="font-serif text-xl font-semibold leading-snug text-neutral-900 sm:text-2xl md:line-clamp-1">
                         {item.title}

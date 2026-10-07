@@ -54,6 +54,7 @@ export default function NewsAiForm() {
   const [draft, setDraft] = React.useState<GeneratedNewsDraft | null>(null);
   const [imageAssetId, setImageAssetId] = React.useState<string | null>(null);
   const [status, setStatus] = React.useState<NewsStatus>("DRAFT");
+  const [editorialDate, setEditorialDate] = React.useState("");
   const [generating, setGenerating] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [uploadingImage, setUploadingImage] = React.useState(false);
@@ -152,6 +153,7 @@ export default function NewsAiForm() {
         imageAssetId,
         videoUrl: null,
         videoAssetId: null,
+        editorialDate: editorialDate || null,
         status,
       });
       router.push(`/admin/novedades/${saved.id}/editar`);
@@ -354,6 +356,19 @@ export default function NewsAiForm() {
                       <option value="DRAFT">Borrador</option>
                       <option value="PUBLISHED">Publicado</option>
                     </select>
+                  </label>
+
+                  <label className="block space-y-1 md:col-span-2">
+                    <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                      Fecha de la noticia/evento
+                    </span>
+                    <input
+                      type="date"
+                      className={inputClass}
+                      disabled={busy}
+                      value={editorialDate}
+                      onChange={(event) => setEditorialDate(event.target.value)}
+                    />
                   </label>
                 </div>
               </div>

@@ -26,6 +26,7 @@ export type News = {
   videoAssetId?: string | null;
   videoUrl?: string | null;
   status: NewsStatus;
+  editorialDate?: string | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   createdAt?: string;
@@ -43,6 +44,7 @@ export type CreateNewsInput = {
   imageUrl?: string | null;
   videoAssetId?: string | null;
   videoUrl?: string | null;
+  editorialDate?: string | null;
   status: NewsStatus;
 };
 

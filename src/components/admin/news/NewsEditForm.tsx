@@ -61,6 +61,7 @@ const emptyForm: UpdateNewsInput = {
   imageUrl: "",
   videoAssetId: null,
   videoUrl: "",
+  editorialDate: "",
   status: "DRAFT",
 };
 
@@ -97,6 +98,7 @@ export default function NewsEditForm({ newsId }: Props) {
           imageUrl: data.imageUrl ?? "",
           videoAssetId: data.videoAssetId ?? null,
           videoUrl: data.videoUrl ?? "",
+          editorialDate: data.editorialDate ?? "",
           status: data.status,
         });
       })
@@ -143,6 +145,7 @@ export default function NewsEditForm({ newsId }: Props) {
         imageUrl,
         videoAssetId: form.videoAssetId ?? null,
         videoUrl,
+        editorialDate: form.editorialDate || null,
         status: form.status,
       };
       const saved = isCreate ? await createNews(payload) : await updateNews(newsId, payload);
@@ -156,6 +159,7 @@ export default function NewsEditForm({ newsId }: Props) {
         imageUrl: saved.imageUrl ?? "",
         videoAssetId: saved.videoAssetId ?? null,
         videoUrl: saved.videoUrl ?? "",
+        editorialDate: saved.editorialDate ?? "",
         status: saved.status,
       });
       setSuccess(isCreate ? "Novedad creada correctamente." : "Novedad guardada correctamente.");
@@ -330,6 +334,18 @@ export default function NewsEditForm({ newsId }: Props) {
                     </option>
                   ))}
                 </select>
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                  Fecha de la noticia/evento
+                </span>
+                <input
+                  type="date"
+                  className={inputClass}
+                  value={form.editorialDate ?? ""}
+                  disabled={saving || uploadingImage || uploadingVideo}
+                  onChange={(event) => setField("editorialDate", event.target.value || null)}
+                />
               </label>
             </div>
           </section>

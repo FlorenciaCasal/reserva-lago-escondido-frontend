@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { listPublicNews } from "@/services/news";
+import { listPublicNews, newsDate, newsDisplayDate } from "@/services/news";
 import type { HomeContent } from "@/types/home";
 
 function dateParts(value?: string | null) {
-  const date = value ? new Date(value) : new Date();
+  const date = newsDate(value) ?? new Date();
   return {
     day: String(date.getDate()).padStart(2, "0"),
     month: new Intl.DateTimeFormat("es-AR", { month: "short" })
@@ -19,7 +19,7 @@ export default async function HomeNewsPreview({ content }: { content: HomeConten
 
   if (!featuredNews) return null;
 
-  const featuredDate = dateParts(featuredNews.publishedAt);
+  const featuredDate = dateParts(newsDisplayDate(featuredNews));
 
   return (
     <section className="bg-[#EFF4F2] px-6 py-14 sm:px-8 sm:py-16">
@@ -71,7 +71,7 @@ export default async function HomeNewsPreview({ content }: { content: HomeConten
             {newsItems.map((item) => (
               <Link key={item.id} href={`/novedades/${item.slug}`} className="group grid grid-cols-[44px_minmax(0,1fr)] gap-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white">
-                  <span className="text-xs font-bold uppercase">{dateParts(item.publishedAt).day}</span>
+                  <span className="text-xs font-bold uppercase">{dateParts(newsDisplayDate(item)).day}</span>
                 </div>
                 <div className="border-b border-neutral-200 pb-5 last:border-b-0">
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
