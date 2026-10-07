@@ -65,6 +65,36 @@ const emptyForm: UpdateNewsInput = {
   status: "DRAFT",
 };
 
+function newsToForm(data: News): UpdateNewsInput {
+  return {
+    title: data.title,
+    summary: data.summary,
+    content: data.content,
+    slug: data.slug,
+    imageAssetId: data.imageAssetId ?? null,
+    imageUrl: data.imageUrl ?? "",
+    videoAssetId: data.videoAssetId ?? null,
+    videoUrl: data.videoUrl ?? "",
+    editorialDate: data.editorialDate ?? "",
+    status: data.status,
+  };
+}
+
+function comparableForm(value: UpdateNewsInput) {
+  return {
+    title: value.title,
+    summary: value.summary,
+    content: value.content,
+    slug: value.slug,
+    imageAssetId: value.imageAssetId ?? null,
+    imageUrl: getPublicUrl(value.imageUrl),
+    videoAssetId: value.videoAssetId ?? null,
+    videoUrl: getPublicUrl(value.videoUrl),
+    editorialDate: value.editorialDate ?? "",
+    status: value.status ?? "DRAFT",
+  };
+}
+
 export default function NewsEditForm({ newsId }: Props) {
   const isCreate = !newsId;
   const [loading, setLoading] = React.useState(!isCreate);
@@ -73,6 +103,7 @@ export default function NewsEditForm({ newsId }: Props) {
   const [uploadingVideo, setUploadingVideo] = React.useState(false);
   const [news, setNews] = React.useState<News | null>(null);
   const [form, setForm] = React.useState<UpdateNewsInput>(emptyForm);
+  const [cleanForm, setCleanForm] = React.useState<UpdateNewsInput>(emptyForm);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
@@ -88,19 +119,10 @@ export default function NewsEditForm({ newsId }: Props) {
 
     getAdminNews(newsId)
       .then((data) => {
+        const nextForm = newsToForm(data);
         setNews(data);
-        setForm({
-          title: data.title,
-          summary: data.summary,
-          content: data.content,
-          slug: data.slug,
-          imageAssetId: data.imageAssetId ?? null,
-          imageUrl: data.imageUrl ?? "",
-          videoAssetId: data.videoAssetId ?? null,
-          videoUrl: data.videoUrl ?? "",
-          editorialDate: data.editorialDate ?? "",
-          status: data.status,
-        });
+        setForm(nextForm);
+        setCleanForm(nextForm);
       })
       .catch(() => setError("No se pudo cargar la novedad."))
       .finally(() => setLoading(false));
@@ -116,6 +138,7 @@ export default function NewsEditForm({ newsId }: Props) {
   const videoUrl = getPublicUrl(form.videoUrl);
   const invalidImageUrl = isInvalidLocalUrl(form.imageUrl);
   const invalidVideoUrl = isInvalidLocalUrl(form.videoUrl);
+  const isDirty = JSON.stringify(comparableForm(form)) !== JSON.stringify(comparableForm(cleanForm));
   const canSave =
     form.title.trim() &&
     form.summary.trim() &&
@@ -129,7 +152,7 @@ export default function NewsEditForm({ newsId }: Props) {
   }
 
   async function onSave() {
-    if (!canSave) return;
+    if (!canSave || !isDirty || saving) return;
 
     setSaving(true);
     setError(null);
@@ -149,19 +172,10 @@ export default function NewsEditForm({ newsId }: Props) {
         status: form.status,
       };
       const saved = isCreate ? await createNews(payload) : await updateNews(newsId, payload);
+      const nextForm = newsToForm(saved);
       setNews(saved);
-      setForm({
-        title: saved.title,
-        summary: saved.summary,
-        content: saved.content,
-        slug: saved.slug,
-        imageAssetId: saved.imageAssetId ?? null,
-        imageUrl: saved.imageUrl ?? "",
-        videoAssetId: saved.videoAssetId ?? null,
-        videoUrl: saved.videoUrl ?? "",
-        editorialDate: saved.editorialDate ?? "",
-        status: saved.status,
-      });
+      setForm(nextForm);
+      setCleanForm(nextForm);
       setSuccess(isCreate ? "Novedad creada correctamente." : "Novedad guardada correctamente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar la novedad.");
@@ -422,12 +436,12 @@ export default function NewsEditForm({ newsId }: Props) {
             </p>
             <button
               type="button"
-              disabled={!canSave || saving || uploadingImage || uploadingVideo}
+              disabled={!canSave || !isDirty || saving || uploadingImage || uploadingVideo}
               onClick={onSave}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400 disabled:shadow-none"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
-              {isCreate ? "Guardar novedad" : "Guardar cambios"}
+              {saving ? "Guardando..." : isCreate ? "Guardar novedad" : "Guardar cambios"}
             </button>
           </section>
         </aside>

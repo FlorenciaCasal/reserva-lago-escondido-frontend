@@ -55,6 +55,36 @@ function slugify(value: string) {
     .slice(0, 160);
 }
 
+function projectToForm(data: Project): UpdateProjectInput {
+  return {
+    title: data.title,
+    summary: data.summary,
+    content: data.content,
+    slug: data.slug,
+    imageAssetId: data.imageAssetId ?? null,
+    imageUrl: data.imageUrl ?? "",
+    videoAssetId: data.videoAssetId ?? null,
+    videoUrl: data.videoUrl ?? "",
+    featured: data.featured,
+    status: data.status,
+  };
+}
+
+function comparableForm(value: UpdateProjectInput) {
+  return {
+    title: value.title,
+    summary: value.summary,
+    content: value.content,
+    slug: value.slug,
+    imageAssetId: value.imageAssetId ?? null,
+    imageUrl: getPublicUrl(value.imageUrl),
+    videoAssetId: value.videoAssetId ?? null,
+    videoUrl: getPublicUrl(value.videoUrl),
+    featured: Boolean(value.featured),
+    status: value.status,
+  };
+}
+
 export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -62,6 +92,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const [uploadingVideo, setUploadingVideo] = React.useState(false);
   const [project, setProject] = React.useState<Project | null>(null);
   const [form, setForm] = React.useState<UpdateProjectInput | null>(null);
+  const [cleanForm, setCleanForm] = React.useState<UpdateProjectInput | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
@@ -75,19 +106,10 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   React.useEffect(() => {
     getAdminProject(projectId)
       .then((data) => {
+        const nextForm = projectToForm(data);
         setProject(data);
-        setForm({
-          title: data.title,
-          summary: data.summary,
-          content: data.content,
-          slug: data.slug,
-          imageAssetId: data.imageAssetId ?? null,
-          imageUrl: data.imageUrl ?? "",
-          videoAssetId: data.videoAssetId ?? null,
-          videoUrl: data.videoUrl ?? "",
-          featured: data.featured,
-          status: data.status,
-        });
+        setForm(nextForm);
+        setCleanForm(nextForm);
       })
       .catch(() => setError("No se pudo cargar el proyecto."))
       .finally(() => setLoading(false));
@@ -112,6 +134,9 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const videoUrl = getPublicUrl(form.videoUrl);
   const invalidImageUrl = isInvalidLocalUrl(form.imageUrl);
   const invalidVideoUrl = isInvalidLocalUrl(form.videoUrl);
+  const isDirty = cleanForm
+    ? JSON.stringify(comparableForm(form)) !== JSON.stringify(comparableForm(cleanForm))
+    : false;
   const canSave =
     form.title.trim() &&
     form.summary.trim() &&
@@ -126,7 +151,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
 
   async function onSave() {
     if (!form) return;
-    if (!canSave) return;
+    if (!canSave || !isDirty || saving) return;
 
     setSaving(true);
     setError(null);
@@ -146,19 +171,10 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
         status: form.status,
       };
       const updated = await updateProject(projectId, payload);
+      const nextForm = projectToForm(updated);
       setProject(updated);
-      setForm({
-        title: updated.title,
-        summary: updated.summary,
-        content: updated.content,
-        slug: updated.slug,
-        imageAssetId: updated.imageAssetId ?? null,
-        imageUrl: updated.imageUrl ?? "",
-        videoAssetId: updated.videoAssetId ?? null,
-        videoUrl: updated.videoUrl ?? "",
-        featured: updated.featured,
-        status: updated.status,
-      });
+      setForm(nextForm);
+      setCleanForm(nextForm);
       setSuccess("Proyecto guardado correctamente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar el proyecto.");
@@ -460,12 +476,12 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
             </p>
             <button
               type="button"
-              disabled={!canSave || saving || uploadingImage || uploadingVideo}
+              disabled={!canSave || !isDirty || saving || uploadingImage || uploadingVideo}
               onClick={onSave}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400 disabled:shadow-none"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
-              Guardar datos del proyecto
+              {saving ? "Guardando..." : "Guardar datos del proyecto"}
             </button>
           </section>
         </aside>
