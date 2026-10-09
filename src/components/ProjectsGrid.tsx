@@ -18,12 +18,18 @@ export default async function ProjectsGrid() {
                         className="rounded-2xl border-2 border-primary p-2 flex flex-col items-center bg-white"
                     >
                         <div className="relative w-full aspect-square rounded-xl overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={project.imageUrl || "/img/home.jpg"}
-                                alt={project.title}
-                                className="h-full w-full object-cover"
-                            />
+                            {project.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={project.imageUrl}
+                                    alt={project.title}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full items-center justify-center px-4 text-center text-xs font-semibold uppercase tracking-wide text-primary/50">
+                                    Sin imagen principal
+                                </div>
+                            )}
                         </div>
 
                         <p className="mt-4 text-primary font-semibold text-sm tracking-wide">

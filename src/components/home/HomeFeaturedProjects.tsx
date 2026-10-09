@@ -30,12 +30,18 @@ export default async function HomeFeaturedProjects({ content }: { content: HomeC
             <article key={project.id} className="group overflow-hidden rounded-sm bg-white transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]">
               <Link href={`/proyectos/${project.slug}`} className="block">
                 <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={project.imageUrl || "/img/home.jpg"}
-                    alt={project.title}
-                    className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
-                  />
+                  {project.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                      Sin imagen principal
+                    </div>
+                  )}
                 </div>
                 <div className="pt-5">
                   <h3 className="line-clamp-2 text-base font-semibold text-neutral-900">
