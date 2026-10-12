@@ -73,6 +73,14 @@ function formFromAdvance(advance: ProjectAdvance): ProjectAdvanceInput {
   };
 }
 
+function comparableAdvanceForm(value: ProjectAdvanceInput) {
+  return {
+    advanceDate: value.advanceDate,
+    title: value.title.trim(),
+    description: value.description.trim(),
+  };
+}
+
 function ProjectAdvanceMediaManager({ projectId, advanceId }: { projectId: string; advanceId: string }) {
   const loadItems = React.useCallback(() => listAdminProjectAdvanceGallery(projectId, advanceId), [projectId, advanceId]);
   const createItem = React.useCallback((input: MediaGalleryItemInput) => createProjectAdvanceGalleryItem(projectId, advanceId, input), [projectId, advanceId]);
@@ -102,6 +110,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
   const [aiDraftActive, setAiDraftActive] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<ProjectAdvanceInput>(emptyForm);
+  const [cleanForm, setCleanForm] = React.useState<ProjectAdvanceInput | null>(null);
   const [aiBrief, setAiBrief] = React.useState(emptyAiBrief);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -121,18 +130,24 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
   }, [projectId]);
 
   const canSave = Boolean(form.advanceDate.trim() && form.title.trim() && form.description.trim());
+  const isDirty = editingId && cleanForm
+    ? JSON.stringify(comparableAdvanceForm(form)) !== JSON.stringify(comparableAdvanceForm(cleanForm))
+    : true;
   const canGenerateAiDraft = Boolean(aiBrief.whatHappened.trim());
 
   function resetForm() {
     setEditingId(null);
     setAiDraftActive(false);
     setForm(emptyForm);
+    setCleanForm(null);
   }
 
   function startEdit(advance: ProjectAdvance) {
+    const nextForm = formFromAdvance(advance);
     setEditingId(advance.id);
     setAiDraftActive(false);
-    setForm(formFromAdvance(advance));
+    setForm(nextForm);
+    setCleanForm(nextForm);
     setError(null);
     setSuccess(null);
   }
@@ -170,6 +185,7 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
   function cancelAiDraft() {
     setAiDraftActive(false);
     setForm(emptyForm);
+    setCleanForm(null);
     setSuccess("Borrador de avance descartado. No se guardo ningun avance.");
   }
 
@@ -193,15 +209,19 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
     try {
       if (editingId) {
         const updated = await updateProjectAdvance(projectId, editingId, payload);
+        const nextForm = formFromAdvance(updated);
         setAdvances((current) => sortAdvancesByTimeline(current.map((item) => (item.id === updated.id ? updated : item))));
-        setForm(formFromAdvance(updated));
+        setForm(nextForm);
+        setCleanForm(nextForm);
         setSuccess("Avance actualizado correctamente.");
       } else {
         const created = await createProjectAdvance(projectId, payload);
+        const nextForm = formFromAdvance(created);
         setAdvances((current) => sortAdvancesByTimeline([...current, created]));
         setEditingId(created.id);
         setAiDraftActive(false);
-        setForm(formFromAdvance(created));
+        setForm(nextForm);
+        setCleanForm(nextForm);
         setSuccess("Avance creado correctamente. Ahora podes agregar multimedia del avance.");
       }
     } catch (err) {
@@ -335,9 +355,9 @@ export default function ProjectAdvancesManager({ projectId }: { projectId: strin
             <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Titulo</span><input className={inputClass} value={form.title} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} /></label>
             <label className="block space-y-1"><span className="text-xs font-medium uppercase tracking-wide text-neutral-400">Descripcion</span><textarea className={`${inputClass} min-h-36 resize-y leading-relaxed`} value={form.description} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} /></label>
 
-            <button type="button" disabled={!canSave || saving} onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400">
+            <button type="button" disabled={!canSave || !isDirty || saving} onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400">
               <Save className="h-4 w-4" />
-              {editingId ? "Guardar avance" : "Crear avance"}
+              {saving ? "Guardando..." : editingId ? "Guardar avance" : "Crear avance"}
             </button>
 
             {editingId ? (
