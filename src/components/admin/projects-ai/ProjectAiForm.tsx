@@ -2,10 +2,11 @@
 
 import React from "react";
 import { ArrowDown, ArrowUp, CheckCircle2, Loader2, Plus, Save, Sparkles, Trash2, Upload } from "lucide-react";
+import ProjectGalleryManager from "@/components/admin/projects/ProjectGalleryManager";
+import { getYouTubeThumbnailUrl, parseYouTubeVideoId } from "@/lib/youtube";
 import {
   createProject,
   createProjectDocument,
-  createProjectImage,
   generateProjectDraft,
   listAdminProjects,
   uploadProjectImage,
@@ -16,7 +17,6 @@ import type {
   GeneratedProjectDraft,
   Project,
   ProjectDocumentInput,
-  ProjectImageInput,
   ProjectStatus,
 } from "@/types/project";
 
@@ -70,14 +70,11 @@ const emptyDraft: GeneratedProjectDraft = {
 const inputClass =
   "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60";
 
-type DraftGalleryImage = ProjectImageInput & {
-  clientId: string;
-};
-
-
 type DraftProjectDocument = ProjectDocumentInput & {
   clientId: string;
 };
+
+type MainMediaType = "IMAGE" | "YOUTUBE";
 
 const emptyProjectDocument: ProjectDocumentInput = {
   title: "",
@@ -104,17 +101,6 @@ function getPublicImageUrl(value?: string | null) {
   return "";
 }
 
-function getGalleryImageUrl(value?: string | null) {
-  const url = value?.trim();
-  if (!url) return "";
-
-  if (url.startsWith("/img/") || url.startsWith("/api/media/") || url.startsWith("https://") || url.startsWith("http://")) {
-    return url;
-  }
-
-  return "";
-}
-
 function getProjectDocumentUrl(value?: string | null) {
   const url = value?.trim();
   if (!url) return "";
@@ -130,12 +116,6 @@ function normalizeSortOrder(value: number | undefined) {
   return Number.isFinite(value) && value !== undefined && value >= 0 ? value : 0;
 }
 
-function normalizeGalleryDrafts(items: DraftGalleryImage[]) {
-  return items
-    .slice()
-    .sort((a, b) => normalizeSortOrder(a.sortOrder) - normalizeSortOrder(b.sortOrder))
-    .map((image, index) => ({ ...image, sortOrder: index }));
-}
 function documentTypeFromContentType(contentType: string) {
   if (contentType === "application/pdf") return "PDF";
   if (contentType === "application/msword") return "DOC";
@@ -149,8 +129,9 @@ export default function ProjectAiForm() {
   const [selectedTargetAudiences, setSelectedTargetAudiences] = React.useState<string[]>([]);
   const [draft, setDraft] = React.useState<GeneratedProjectDraft | null>(null);
   const [inputImageAssetId, setInputImageAssetId] = React.useState<string | null>(null);
-  const [galleryImages, setGalleryImages] = React.useState<DraftGalleryImage[]>([]);
-  const [showGalleryForm, setShowGalleryForm] = React.useState(false);
+  const [mainMediaType, setMainMediaType] = React.useState<MainMediaType>("IMAGE");
+  const [mainYoutubeUrl, setMainYoutubeUrl] = React.useState("");
+  const [createdProject, setCreatedProject] = React.useState<Project | null>(null);
   const [projectDocuments, setProjectDocuments] = React.useState<DraftProjectDocument[]>([]);
   const [documentForm, setDocumentForm] = React.useState<ProjectDocumentInput>(emptyProjectDocument);
   const [showDocumentForm, setShowDocumentForm] = React.useState(false);
@@ -160,7 +141,6 @@ export default function ProjectAiForm() {
   const [generating, setGenerating] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [uploadingMainImage, setUploadingMainImage] = React.useState(false);
-  const [uploadingGalleryImage, setUploadingGalleryImage] = React.useState(false);
   const [uploadingDocument, setUploadingDocument] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -207,9 +187,9 @@ export default function ProjectAiForm() {
   const busy = generating || saving;
   const inputImageUrl = getPublicImageUrl(input.imageUrl);
   const draftImageUrl = getPublicImageUrl(activeDraft.imageUrl);
-  const hasInvalidSavedGalleryImage = galleryImages.some(
-    (image) => Boolean(image.imageUrl.trim()) && !getGalleryImageUrl(image.imageUrl)
-  );
+  const mainYoutubeVideoId = parseYouTubeVideoId(mainYoutubeUrl);
+  const hasInvalidMainYoutubeUrl =
+    mainMediaType === "YOUTUBE" && Boolean(mainYoutubeUrl.trim()) && !mainYoutubeVideoId;
   const documentFileUrl = getProjectDocumentUrl(documentForm.fileUrl);
   const hasInvalidDocumentFileUrl = Boolean(documentForm.fileUrl?.trim()) && !documentFileUrl;
   const hasInvalidSavedProjectDocument = projectDocuments.some(
@@ -217,7 +197,7 @@ export default function ProjectAiForm() {
   );
   const canAddProjectDocument =
     Boolean(documentForm.title.trim()) && (Boolean(documentForm.mediaAssetId) || Boolean(documentFileUrl)) && !hasInvalidDocumentFileUrl;
-  const canSaveProject = Boolean(canSave) && !hasInvalidSavedGalleryImage && !hasInvalidSavedProjectDocument;
+  const canSaveProject = Boolean(canSave) && !hasInvalidMainYoutubeUrl && !hasInvalidSavedProjectDocument;
 
   React.useEffect(() => {
     listAdminProjects()
@@ -237,6 +217,7 @@ export default function ProjectAiForm() {
       const uploaded = await uploadProjectImage(file);
       setInput((current) => ({ ...current, imageUrl: uploaded.url }));
       setInputImageAssetId(uploaded.id);
+      setMainMediaType("IMAGE");
       if (draft) updateDraft({ imageUrl: uploaded.url });
       setSuccess("Imagen principal subida. Se asociara al guardar el proyecto.");
     } catch (err) {
@@ -262,46 +243,6 @@ export default function ProjectAiForm() {
     );
   }
 
-  async function onGalleryImageFileChange(files?: FileList | null) {
-    const selectedFiles = Array.from(files ?? []);
-    if (selectedFiles.length === 0) return;
-
-    setUploadingGalleryImage(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const uploadedImages: DraftGalleryImage[] = [];
-
-      for (const file of selectedFiles) {
-        const uploaded = await uploadProjectImage(file);
-        uploadedImages.push({
-          clientId: crypto.randomUUID(),
-          imageUrl: uploaded.url,
-          mediaAssetId: uploaded.id,
-          altText: "",
-          caption: "",
-          sortOrder: 0,
-        });
-      }
-
-      setGalleryImages((current) =>
-        normalizeGalleryDrafts([
-          ...current,
-          ...uploadedImages.map((image, index) => ({
-            ...image,
-            sortOrder: current.length + index,
-          })),
-        ])
-      );
-      setShowGalleryForm(false);
-      setSuccess(`${uploadedImages.length} imagen(es) agregada(s) a la galeria.`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo subir la imagen.");
-    } finally {
-      setUploadingGalleryImage(false);
-    }
-  }
   async function onDocumentFileChange(files?: FileList | null) {
     const selectedFiles = Array.from(files ?? []);
     if (selectedFiles.length === 0) return;
@@ -352,6 +293,7 @@ export default function ProjectAiForm() {
     setGenerating(true);
     setError(null);
     setSuccess(null);
+    setCreatedProject(null);
 
     try {
       const generated = await generateProjectDraft({
@@ -379,25 +321,12 @@ export default function ProjectAiForm() {
     try {
       const saved = await createProject({
         ...draft,
-        imageUrl: getPublicImageUrl(draft.imageUrl),
-        imageAssetId: inputImageAssetId,
+        imageUrl: mainMediaType === "IMAGE" ? getPublicImageUrl(draft.imageUrl) : null,
+        imageAssetId: mainMediaType === "IMAGE" ? inputImageAssetId : null,
+        videoUrl: mainMediaType === "YOUTUBE" ? mainYoutubeUrl.trim() || null : null,
+        videoAssetId: null,
         status,
       });
-
-      let failedGalleryCount = 0;
-      for (const image of normalizeGalleryDrafts(galleryImages)) {
-        try {
-          await createProjectImage(saved.id, {
-            imageUrl: getGalleryImageUrl(image.imageUrl),
-            mediaAssetId: image.mediaAssetId ?? null,
-            altText: image.altText?.trim() || null,
-            caption: image.caption?.trim() || null,
-            sortOrder: normalizeSortOrder(image.sortOrder),
-          });
-        } catch {
-          failedGalleryCount += 1;
-        }
-      }
 
       let failedDocumentCount = 0;
       for (const doc of projectDocuments) {
@@ -416,17 +345,18 @@ export default function ProjectAiForm() {
       }
 
       setProjects((current) => [saved, ...current]);
+      setCreatedProject(saved);
       setDraft(null);
       setInput(initialInput);
       setSelectedObjectiveOptions([]);
       setSelectedTargetAudiences([]);
       setInputImageAssetId(null);
-      setGalleryImages([]);
+      setMainMediaType("IMAGE");
+      setMainYoutubeUrl("");
       setProjectDocuments([]);
       setDocumentForm(emptyProjectDocument);
       setStatus("PUBLISHED");
       const failureParts = [];
-      if (failedGalleryCount > 0) failureParts.push(`${failedGalleryCount} imagen(es) de galeria`);
       if (failedDocumentCount > 0) failureParts.push(`${failedDocumentCount} documento(s)`);
       if (failureParts.length > 0) {
         setError(
@@ -453,28 +383,6 @@ export default function ProjectAiForm() {
     setDraft((current) => ({ ...(current ?? emptyDraft), ...next }));
   }
 
-  function updateGalleryImage(clientId: string, next: Partial<ProjectImageInput>) {
-    setGalleryImages((current) =>
-      current.map((image) => (image.clientId === clientId ? { ...image, ...next } : image))
-    );
-  }
-
-  function removeGalleryImage(clientId: string) {
-    setGalleryImages((current) => normalizeGalleryDrafts(current.filter((image) => image.clientId !== clientId)));
-  }
-
-  function moveGalleryImage(clientId: string, direction: -1 | 1) {
-    setGalleryImages((current) => {
-      const normalized = normalizeGalleryDrafts(current);
-      const index = normalized.findIndex((image) => image.clientId === clientId);
-      const swapWith = index + direction;
-      if (index < 0 || swapWith < 0 || swapWith >= normalized.length) return normalized;
-
-      const next = [...normalized];
-      [next[index], next[swapWith]] = [next[swapWith], next[index]];
-      return next.map((image, itemIndex) => ({ ...image, sortOrder: itemIndex }));
-    });
-  }
   function addProjectDocument() {
     if (!canAddProjectDocument) return;
 
@@ -698,32 +606,104 @@ export default function ProjectAiForm() {
 
             <label className="block space-y-2">
               <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                Imagen principal
+                Medio principal
               </span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-                disabled={busy || uploadingMainImage}
-                className="sr-only"
-                onChange={(event) => onInputImageFileChange(event.target.files?.[0])}
-              />
-              <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={busy || uploadingMainImage}>
-                {inputImageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
-              </span>
-              {uploadingMainImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
-              {inputImageUrl && (
-                <button type="button" disabled={busy || uploadingMainImage} onClick={clearInputImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
-              )}
+              <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-950 p-1">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setMainMediaType("IMAGE")}
+                  className={`rounded-md px-3 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+                    mainMediaType === "IMAGE"
+                      ? "bg-primary text-white"
+                      : "text-neutral-300 hover:bg-neutral-900"
+                  }`}
+                >
+                  Imagen
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setMainMediaType("YOUTUBE")}
+                  className={`rounded-md px-3 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+                    mainMediaType === "YOUTUBE"
+                      ? "bg-primary text-white"
+                      : "text-neutral-300 hover:bg-neutral-900"
+                  }`}
+                >
+                  Video de YouTube
+                </button>
+              </div>
             </label>
-            {inputImageUrl && (
-              <figure className="w-40 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70 sm:w-44">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={inputImageUrl}
-                  alt="Imagen principal del proyecto"
-                  className="aspect-video w-full object-cover"
-                />
-              </figure>
+
+            {mainMediaType === "IMAGE" && (
+              <>
+                <label className="block space-y-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                    Imagen principal
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                    disabled={busy || uploadingMainImage}
+                    className="sr-only"
+                    onChange={(event) => onInputImageFileChange(event.target.files?.[0])}
+                  />
+                  <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={busy || uploadingMainImage}>
+                    {inputImageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
+                  </span>
+                  {uploadingMainImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
+                  {inputImageUrl && (
+                    <button type="button" disabled={busy || uploadingMainImage} onClick={clearInputImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
+                  )}
+                </label>
+                {inputImageUrl && (
+                  <figure className="w-40 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70 sm:w-44">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={inputImageUrl}
+                      alt="Imagen principal del proyecto"
+                      className="aspect-video w-full object-cover"
+                    />
+                  </figure>
+                )}
+              </>
+            )}
+
+            {mainMediaType === "YOUTUBE" && (
+              <>
+                <label className="block space-y-1">
+                  <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                    Video principal de YouTube
+                  </span>
+                  <input
+                    className={inputClass}
+                    disabled={busy}
+                    value={mainYoutubeUrl}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    onChange={(event) => setMainYoutubeUrl(event.target.value)}
+                  />
+                  <p className="text-xs leading-5 text-neutral-500">
+                    Al guardar, este video quedara como medio principal y la imagen principal anterior dejara de estar activa.
+                  </p>
+                  {hasInvalidMainYoutubeUrl && (
+                    <p className="text-xs leading-5 text-yellow">
+                      Pega un enlace valido de YouTube, no HTML ni iframe.
+                    </p>
+                  )}
+                </label>
+
+                {mainYoutubeVideoId && (
+                  <figure className="w-40 overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70 sm:w-44">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getYouTubeThumbnailUrl(mainYoutubeVideoId)}
+                      alt=""
+                      className="aspect-video w-full object-cover"
+                    />
+                  </figure>
+                )}
+              </>
             )}
           </div>
 
@@ -744,146 +724,25 @@ export default function ProjectAiForm() {
         <div className="border-t border-neutral-800 p-4">
           <div className="mb-4">
             <p className="text-xs font-medium uppercase tracking-wide text-primary-light">
-              Galeria del proyecto
+              Galeria multimedia del proyecto
             </p>
             <h3 className="mt-1 text-base font-semibold text-neutral-100">
-              Imágenes asociadas
+              Imagenes y videos de YouTube
             </h3>
             <p className="mt-1 text-sm text-neutral-400">
-              La imagen principal se mantiene separada. Agrega aca imágenes adicionales para la galeria publica.
+              La imagen y el video principal se mantienen separados. Guarda el proyecto para habilitar la gestion multimedia compartida.
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
-              {galleryImages.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/40 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-4">
-                  Todavia no agregaste imágenes de galeria para este proyecto.
-                </div>
-              ) : (
-                galleryImages
-                  .slice()
-                  .sort((a, b) => normalizeSortOrder(a.sortOrder) - normalizeSortOrder(b.sortOrder))
-                  .map((image, index) => (
-                    <article
-                      key={image.clientId}
-                      className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/60"
-                    >
-                      {getGalleryImageUrl(image.imageUrl) && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={getGalleryImageUrl(image.imageUrl)}
-                          alt={image.altText || image.caption || "Imagen de galeria"}
-                          className="h-28 w-full object-cover"
-                        />
-                      )}
-                      <div className="space-y-2 p-2.5">
-                        <label className="block space-y-1">
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                            Texto alternativo
-                          </span>
-                          <input
-                            className={inputClass}
-                            disabled={busy}
-                            value={image.altText ?? ""}
-                            onChange={(event) =>
-                              updateGalleryImage(image.clientId, { altText: event.target.value })
-                            }
-                          />
-                        </label>
-
-                        <label className="block space-y-1">
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                            Epigrafe
-                          </span>
-                          <textarea
-                            className={`${inputClass} min-h-16 resize-y leading-relaxed`}
-                            disabled={busy}
-                            value={image.caption ?? ""}
-                            onChange={(event) =>
-                              updateGalleryImage(image.clientId, { caption: event.target.value })
-                            }
-                          />
-                        </label>
-
-                        <div className="flex items-end gap-2">
-                          <button
-                            type="button"
-                            disabled={busy || index === 0}
-                            onClick={() => moveGalleryImage(image.clientId, -1)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
-                            aria-label="Subir imagen"
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={busy || index === galleryImages.length - 1}
-                            onClick={() => moveGalleryImage(image.clientId, 1)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40"
-                            aria-label="Bajar imagen"
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => removeGalleryImage(image.clientId)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-900/70 text-red-200 hover:bg-red-950/50 disabled:opacity-40"
-                            aria-label="Eliminar imagen"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  ))
-              )}
-              <button
-                type="button"
-                onClick={() => setShowGalleryForm((current) => !current)}
-                className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-neutral-700 bg-neutral-900/30 p-4 text-center text-neutral-400 transition hover:border-primary/70 hover:bg-neutral-900/60 hover:text-primary-light"
-              >
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800 text-neutral-100">
-                  <Plus className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <span className="text-xs font-semibold">Agregar imagen</span>
-              </button>
+          {createdProject ? (
+            <ProjectGalleryManager projectId={createdProject.id} />
+          ) : (
+            <div className="rounded-xl border border-dashed border-neutral-700 bg-neutral-900/40 p-5 text-sm text-neutral-400">
+              Guarda el proyecto generado para agregar multiples imagenes y videos de YouTube con el gestor multimedia.
             </div>
-
-            {showGalleryForm && (
-              <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <label className="block flex-1 space-y-2">
-                    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-300">
-                      <Upload className="h-4 w-4" />
-                      Elegir archivo
-                    </span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-                      disabled={busy || uploadingGalleryImage}
-                      className="block w-full text-sm text-neutral-300 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-60"
-                      onChange={(event) => onGalleryImageFileChange(event.target.files)}
-                    />
-                    {uploadingGalleryImage && <p className="text-xs text-neutral-400">Subiendo imágenes...</p>}
-                  </label>
-                  <button
-                    type="button"
-                    disabled={busy || uploadingGalleryImage}
-                    onClick={() => {
-                      setShowGalleryForm(false);
-                    }}
-                    className="inline-flex justify-center rounded-lg border border-neutral-700 px-4 py-2.5 text-sm font-semibold text-neutral-100 hover:bg-neutral-800 disabled:opacity-50"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </div>
+
         <div className="border-t border-neutral-800 p-4">
           <div className="mb-4">
             <p className="text-xs font-medium uppercase tracking-wide text-primary-light">

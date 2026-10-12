@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type React from "react";
 import PublicMediaCarousel from "@/components/media/PublicMediaCarousel";
+import YouTubeEmbedPreview from "@/components/media/YouTubeEmbedPreview";
 import ProjectDetailTabs from "@/components/projects/ProjectDetailTabs";
 import RevealOnView from "@/components/ui/RevealOnView";
+import { parseYouTubeVideoId } from "@/lib/youtube";
 import type { MediaGalleryItem, Project, ProjectAdvance } from "@/types/project";
 function isUploadedVideo(videoUrl?: string | null, videoAssetId?: string | null) {
   const url = videoUrl?.trim();
@@ -95,6 +97,7 @@ export default function PublicProjectDetail({
   const projectTitle = project.title;
   const projectSummary = project.summary;
   const hasProjectVideo = Boolean(project.videoUrl?.trim());
+  const hasProjectYoutubeVideo = Boolean(parseYouTubeVideoId(project.videoUrl));
   const hasGallery = gallery.length > 0;
   const hasAdvances = advances.length > 0;
   const hasDocuments = documents.length > 0;
@@ -138,6 +141,12 @@ export default function PublicProjectDetail({
                     controls
                     preload="metadata"
                     className="aspect-[16/10] w-full bg-black object-contain"
+                  />
+                ) : hasProjectYoutubeVideo ? (
+                  <YouTubeEmbedPreview
+                    url={project.videoUrl}
+                    title={`Video principal de ${projectTitle}`}
+                    className="aspect-[16/10] w-full"
                   />
                 ) : (
                   <a

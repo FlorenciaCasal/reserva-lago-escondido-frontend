@@ -6,16 +6,18 @@ import { Eye, EyeOff, Save, Star } from "lucide-react";
 import ProjectAdvancesManager from "@/components/admin/projects/ProjectAdvancesManager";
 import ProjectDocumentsManager from "@/components/admin/projects/ProjectDocumentsManager";
 import ProjectGalleryManager from "@/components/admin/projects/ProjectGalleryManager";
+import { getYouTubeThumbnailUrl, parseYouTubeVideoId } from "@/lib/youtube";
 import {
   getAdminProject,
   updateProject,
   uploadProjectImage,
-  uploadProjectVideo,
 } from "@/services/projects";
 import type { Project, ProjectStatus, UpdateProjectInput } from "@/types/project";
 
 const inputClass =
   "w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60";
+
+type MainMediaType = "IMAGE" | "YOUTUBE";
 
 function getPublicUrl(value?: string | null) {
   const url = value?.trim();
@@ -70,6 +72,10 @@ function projectToForm(data: Project): UpdateProjectInput {
   };
 }
 
+function getMainMediaType(data: { videoUrl?: string | null }): MainMediaType {
+  return getPublicUrl(data.videoUrl) ? "YOUTUBE" : "IMAGE";
+}
+
 function comparableForm(value: UpdateProjectInput) {
   return {
     title: value.title,
@@ -89,10 +95,11 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [uploadingImage, setUploadingImage] = React.useState(false);
-  const [uploadingVideo, setUploadingVideo] = React.useState(false);
   const [project, setProject] = React.useState<Project | null>(null);
   const [form, setForm] = React.useState<UpdateProjectInput | null>(null);
   const [cleanForm, setCleanForm] = React.useState<UpdateProjectInput | null>(null);
+  const [mainMediaType, setMainMediaType] = React.useState<MainMediaType>("IMAGE");
+  const [cleanMainMediaType, setCleanMainMediaType] = React.useState<MainMediaType>("IMAGE");
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
@@ -107,9 +114,12 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
     getAdminProject(projectId)
       .then((data) => {
         const nextForm = projectToForm(data);
+        const nextMediaType = getMainMediaType(data);
         setProject(data);
         setForm(nextForm);
         setCleanForm(nextForm);
+        setMainMediaType(nextMediaType);
+        setCleanMainMediaType(nextMediaType);
       })
       .catch(() => setError("No se pudo cargar el proyecto."))
       .finally(() => setLoading(false));
@@ -132,10 +142,14 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
   const currentStatus = form.status ?? project.status;
   const imageUrl = getPublicUrl(form.imageUrl);
   const videoUrl = getPublicUrl(form.videoUrl);
+  const youtubeVideoId = parseYouTubeVideoId(videoUrl);
   const invalidImageUrl = isInvalidLocalUrl(form.imageUrl);
-  const invalidVideoUrl = isInvalidLocalUrl(form.videoUrl);
+  const isLegacyMediaVideo = Boolean(form.videoAssetId) || videoUrl.startsWith("/api/media/");
+  const hasInvalidMainYoutubeUrl =
+    mainMediaType === "YOUTUBE" && Boolean(videoUrl) && !isLegacyMediaVideo && !youtubeVideoId;
   const isDirty = cleanForm
-    ? JSON.stringify(comparableForm(form)) !== JSON.stringify(comparableForm(cleanForm))
+    ? JSON.stringify({ mainMediaType, form: comparableForm(form) }) !==
+      JSON.stringify({ mainMediaType: cleanMainMediaType, form: comparableForm(cleanForm) })
     : false;
   const canSave =
     form.title.trim() &&
@@ -143,7 +157,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
     form.content.trim() &&
     form.slug.trim() &&
     !invalidImageUrl &&
-    !invalidVideoUrl;
+    !hasInvalidMainYoutubeUrl;
 
   function setField<K extends keyof UpdateProjectInput>(key: K, value: UpdateProjectInput[K]) {
     setForm((current) => (current ? { ...current, [key]: value } : current));
@@ -163,18 +177,21 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
         summary: form.summary,
         content: form.content,
         slug: form.slug,
-        imageAssetId: form.imageAssetId ?? null,
-        imageUrl,
-        videoAssetId: form.videoAssetId ?? null,
-        videoUrl,
+        imageAssetId: mainMediaType === "IMAGE" ? form.imageAssetId ?? null : null,
+        imageUrl: mainMediaType === "IMAGE" ? imageUrl : null,
+        videoAssetId: mainMediaType === "YOUTUBE" ? form.videoAssetId ?? null : null,
+        videoUrl: mainMediaType === "YOUTUBE" ? videoUrl : null,
         featured: form.featured,
         status: form.status,
       };
       const updated = await updateProject(projectId, payload);
       const nextForm = projectToForm(updated);
+      const nextMediaType = getMainMediaType(updated);
       setProject(updated);
       setForm(nextForm);
       setCleanForm(nextForm);
+      setMainMediaType(nextMediaType);
+      setCleanMainMediaType(nextMediaType);
       setSuccess("Proyecto guardado correctamente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar el proyecto.");
@@ -201,6 +218,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
             }
           : current
       );
+      setMainMediaType("IMAGE");
       setSuccess("Imagen subida. Guarda los datos del proyecto para asociarla definitivamente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo subir la imagen.");
@@ -212,32 +230,6 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
     setField("imageUrl", "");
     setField("imageAssetId", null);
     setSuccess("Imagen principal quitada. Guarda los datos del proyecto para confirmar el cambio.");
-  }
-
-  async function onMainVideoFileChange(file?: File) {
-    if (!file) return;
-
-    setUploadingVideo(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const uploaded = await uploadProjectVideo(file);
-      setForm((current) =>
-        current
-          ? {
-              ...current,
-              videoAssetId: uploaded.id,
-              videoUrl: uploaded.url,
-            }
-          : current
-      );
-      setSuccess("Video subido. Guarda los datos del proyecto para asociarlo definitivamente.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo subir el video.");
-    } finally {
-      setUploadingVideo(false);
-    }
   }
 
   function clearMainVideo() {
@@ -310,7 +302,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <input
                 className={inputClass}
                 value={form.title}
-                disabled={saving || uploadingImage || uploadingVideo}
+                disabled={saving || uploadingImage}
                 onChange={(event) => {
                   const title = event.target.value;
                   setForm((current) =>
@@ -333,7 +325,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <textarea
                 className={`${inputClass} min-h-24 resize-y`}
                 value={form.summary}
-                disabled={saving || uploadingImage || uploadingVideo}
+                disabled={saving || uploadingImage}
                 onChange={(event) => setField("summary", event.target.value)}
               />
             </label>
@@ -345,7 +337,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <textarea
                 className={`${inputClass} min-h-80 resize-y leading-relaxed`}
                 value={form.content}
-                disabled={saving || uploadingImage || uploadingVideo}
+                disabled={saving || uploadingImage}
                 onChange={(event) => setField("content", event.target.value)}
               />
             </label>
@@ -365,7 +357,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
                 <select
                   className={inputClass}
                   value={currentStatus}
-                  disabled={saving || uploadingImage || uploadingVideo}
+                  disabled={saving || uploadingImage}
                   onChange={(event) => setField("status", event.target.value as ProjectStatus)}
                 >
                   {projectStatusOptions[project.status].map((option) => (
@@ -380,7 +372,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
                 <input
                   type="checkbox"
                   checked={Boolean(form.featured)}
-                  disabled={saving || uploadingImage || uploadingVideo || currentStatus === "ARCHIVED"}
+                  disabled={saving || uploadingImage || currentStatus === "ARCHIVED"}
                   onChange={(event) => setField("featured", event.target.checked)}
                 />
                 <Star className="h-4 w-4 text-primary-light" aria-hidden="true" />
@@ -397,62 +389,129 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
 
               <label className="block space-y-2">
                 <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                  Imagen principal
+                  Medio principal
                 </span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-                  disabled={saving || uploadingImage || uploadingVideo}
-                  className="sr-only"
-                  onChange={(event) => onMainImageFileChange(event.target.files?.[0])}
-                />
-                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage || uploadingVideo}>
-                  {imageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
-                </span>
-                {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
-                {imageUrl && (
-                  <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearMainImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
-                )}
+                <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-neutral-700 bg-neutral-950 p-1">
+                  <button
+                    type="button"
+                    disabled={saving || uploadingImage}
+                    onClick={() => setMainMediaType("IMAGE")}
+                    className={`rounded-md px-3 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+                      mainMediaType === "IMAGE"
+                        ? "bg-primary text-white"
+                        : "text-neutral-300 hover:bg-neutral-900"
+                    }`}
+                  >
+                    Imagen
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving || uploadingImage}
+                    onClick={() => setMainMediaType("YOUTUBE")}
+                    className={`rounded-md px-3 py-2 text-sm font-semibold transition disabled:opacity-60 ${
+                      mainMediaType === "YOUTUBE"
+                        ? "bg-primary text-white"
+                        : "text-neutral-300 hover:bg-neutral-900"
+                    }`}
+                  >
+                    Video de YouTube
+                  </button>
+                </div>
               </label>
 
-              {imageUrl && (
-                <figure className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70">
-                  <figcaption className="border-b border-neutral-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
-                    Vista previa actual
-                  </figcaption>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={imageUrl}
-                    alt={form.title || "Imagen principal del proyecto"}
-                    className="aspect-video w-full object-cover"
-                  />
-                </figure>
+              {mainMediaType === "IMAGE" && (
+                <>
+                  <label className="block space-y-2">
+                    <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                      Imagen principal
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                      disabled={saving || uploadingImage}
+                      className="sr-only"
+                      onChange={(event) => onMainImageFileChange(event.target.files?.[0])}
+                    />
+                    <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage}>
+                      {imageUrl ? "Cambiar imagen" : "Seleccionar imagen"}
+                    </span>
+                    {uploadingImage && <p className="text-xs text-neutral-400">Subiendo imagen...</p>}
+                    {imageUrl && (
+                      <button type="button" disabled={saving || uploadingImage} onClick={clearMainImage} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar imagen</button>
+                    )}
+                  </label>
+
+                  {imageUrl && (
+                    <figure className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70">
+                      <figcaption className="border-b border-neutral-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+                        Vista previa actual
+                      </figcaption>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl}
+                        alt={form.title || "Imagen principal del proyecto"}
+                        className="aspect-video w-full object-cover"
+                      />
+                    </figure>
+                  )}
+                </>
               )}
 
-              <label className="block space-y-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-                  Video principal
-                </span>
-                <input
-                  type="file"
-                  accept="video/mp4"
-                  disabled={saving || uploadingImage || uploadingVideo}
-                  className="sr-only"
-                  onChange={(event) => onMainVideoFileChange(event.target.files?.[0])}
-                />
-                <span className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-neutral-100 transition hover:bg-neutral-800 aria-disabled:pointer-events-none aria-disabled:opacity-60" aria-disabled={saving || uploadingImage || uploadingVideo}>
-                  {videoUrl ? "Cambiar video" : "Seleccionar video"}
-                </span>
-                {uploadingVideo && <p className="text-xs text-neutral-400">Subiendo video...</p>}
-                {videoUrl && (
-                  <button type="button" disabled={saving || uploadingImage || uploadingVideo} onClick={clearMainVideo} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar video</button>
-                )}
-              </label>
+              {mainMediaType === "YOUTUBE" && (
+                <>
+                  <label className="block space-y-1">
+                    <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                      Enlace de YouTube para video principal
+                    </span>
+                    <input
+                      className={inputClass}
+                      disabled={saving || uploadingImage}
+                      value={!form.videoAssetId && videoUrl ? videoUrl : ""}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      onChange={(event) => {
+                        setField("videoUrl", event.target.value);
+                        setField("videoAssetId", null);
+                      }}
+                    />
+                    <p className="text-xs leading-5 text-neutral-500">
+                      Al guardar, este video quedara como medio principal y la imagen principal anterior dejara de estar activa.
+                    </p>
+                    {hasInvalidMainYoutubeUrl && (
+                      <p className="text-xs leading-5 text-yellow">
+                        Pega un enlace valido de YouTube, no HTML ni iframe.
+                      </p>
+                    )}
+                  </label>
 
-              {videoUrl && (
-                <video controls preload="metadata" className="aspect-video w-full rounded-lg border border-neutral-800 bg-black object-contain">
-                  <source src={videoUrl} type="video/mp4" />
-                </video>
+                  {videoUrl && youtubeVideoId && (
+                    <figure className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900/70">
+                      <figcaption className="border-b border-neutral-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+                        Video de YouTube principal
+                      </figcaption>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={getYouTubeThumbnailUrl(youtubeVideoId)}
+                        alt=""
+                        className="aspect-video w-full object-cover"
+                      />
+                    </figure>
+                  )}
+
+                  {videoUrl && isLegacyMediaVideo && !youtubeVideoId && (
+                    <div className="space-y-2">
+                      <video controls preload="metadata" className="aspect-video w-full rounded-lg border border-neutral-800 bg-black object-contain">
+                        <source src={videoUrl} type="video/mp4" />
+                      </video>
+                      <p className="text-xs leading-5 text-neutral-500">
+                        Video MP4 legacy. Podes conservarlo o reemplazarlo pegando un enlace de YouTube.
+                      </p>
+                    </div>
+                  )}
+
+                  {videoUrl && (
+                    <button type="button" disabled={saving || uploadingImage} onClick={clearMainVideo} className="text-left text-xs font-semibold text-neutral-500 hover:text-red-200 disabled:opacity-50">Quitar video</button>
+                  )}
+                </>
               )}
             </div>
           </section>
@@ -465,7 +524,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               <input
                 className={inputClass}
                 value={form.slug}
-                disabled={saving || uploadingImage || uploadingVideo}
+                disabled={saving || uploadingImage}
                 onChange={(event) => setField("slug", slugify(event.target.value))}
               />
             </label>
@@ -476,7 +535,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
             </p>
             <button
               type="button"
-              disabled={!canSave || !isDirty || saving || uploadingImage || uploadingVideo}
+              disabled={!canSave || !isDirty || saving || uploadingImage}
               onClick={onSave}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400 disabled:shadow-none"
             >
