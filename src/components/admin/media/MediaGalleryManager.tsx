@@ -67,6 +67,13 @@ export default function MediaGalleryManager({
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
+  const reloadItems = React.useCallback(async () => {
+    const loaded = await loadItems();
+    const sorted = sortItems(loaded);
+    setItems(sorted);
+    return sorted;
+  }, [loadItems]);
+
   React.useEffect(() => {
     let active = true;
     setLoading(true);
@@ -91,11 +98,11 @@ export default function MediaGalleryManager({
     return () => window.clearTimeout(timeout);
   }, [success]);
 
-  async function normalizeRemote(nextItems: MediaGalleryItem[]) {
+  async function normalizeRemote(nextItems: MediaGalleryItem[], options: { force?: boolean } = {}) {
     const sorted = sortItems(nextItems);
     const normalized = await Promise.all(
       sorted.map((item, index) => {
-        if (item.sortOrder === index) return Promise.resolve({ ...item, sortOrder: index });
+        if (!options.force && item.sortOrder === index) return Promise.resolve({ ...item, sortOrder: index });
         return updateItem(item.id, toInput(item, index));
       })
     );
@@ -207,9 +214,10 @@ export default function MediaGalleryManager({
     setSuccess(null);
 
     try {
-      setItems(await normalizeRemote(next.map((entry, entryIndex) => ({ ...entry, sortOrder: entryIndex }))));
+      setItems(await normalizeRemote(next.map((entry, entryIndex) => ({ ...entry, sortOrder: entryIndex })), { force: true }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo reordenar la galeria.");
+      await reloadItems().catch(() => undefined);
     } finally {
       setSaving(false);
     }
