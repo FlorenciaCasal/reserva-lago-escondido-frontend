@@ -51,9 +51,9 @@ export default function PublicMediaCarousel({ items, imageAltFallback, compact =
           ) : isYoutube(active) ? (
             playingId === active.id ? (
               <iframe
-                src={`${active.embedUrl}?rel=0`}
+                src={`${active.embedUrl}?rel=0&autoplay=1`}
                 title={active.caption || imageAltFallback}
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
                 className="h-full w-full"
               />
