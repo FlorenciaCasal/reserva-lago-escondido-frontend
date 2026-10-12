@@ -119,19 +119,25 @@ export default function MediaGalleryManager({
 
     try {
       let next = [...items];
+      let firstCreated: MediaGalleryItem | null = null;
       for (const file of selected) {
         const uploaded = await uploadImage(file);
         const created = await createItem({
           kind: "IMAGE",
           sourceType: "MEDIA_ASSET",
           mediaAssetId: uploaded.id,
-          altText: uploaded.originalFilename,
+          altText: null,
           caption: null,
           sortOrder: next.length,
         });
+        firstCreated = firstCreated ?? created;
         next = [...next, created];
       }
-      setItems(await normalizeRemote(next));
+      const normalized = await normalizeRemote(next);
+      setItems(normalized);
+      if (firstCreated) {
+        setEditing(normalized.find((item) => item.id === firstCreated?.id) ?? firstCreated);
+      }
       setSuccess(selected.length === 1 ? "Imagen agregada." : "Imagenes agregadas.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron subir las imagenes.");
@@ -353,21 +359,34 @@ export default function MediaGalleryManager({
               </div>
               <div className="mt-3 space-y-3">
                 {editing.kind === "IMAGE" && (
-                  <input
-                    className={inputClass}
-                    value={editing.altText ?? ""}
-                    disabled={saving}
-                    placeholder="Texto alternativo"
-                    onChange={(event) => setEditing((current) => current && { ...current, altText: event.target.value })}
-                  />
+                  <label className="block space-y-1.5">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
+                      Texto alternativo
+                    </span>
+                    <input
+                      className={inputClass}
+                      value={editing.altText ?? ""}
+                      disabled={saving}
+                      placeholder="Texto alternativo descriptivo, sin coordenadas ni ubicaciones sensibles"
+                      onChange={(event) => setEditing((current) => current && { ...current, altText: event.target.value })}
+                    />
+                    <p className="text-xs leading-5 text-neutral-500">
+                      Recomendado por accesibilidad: describí brevemente qué muestra la imagen para las personas que utilizan lectores de pantalla. No incluyas coordenadas ni ubicaciones sensibles.
+                    </p>
+                  </label>
                 )}
-                <textarea
-                  className={`${inputClass} min-h-20 resize-y`}
-                  value={editing.caption ?? ""}
-                  disabled={saving}
-                  placeholder="Epigrafe opcional"
-                  onChange={(event) => setEditing((current) => current && { ...current, caption: event.target.value })}
-                />
+                <label className="block space-y-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-400">
+                    Epígrafe (opcional)
+                  </span>
+                  <textarea
+                    className={`${inputClass} min-h-20 resize-y`}
+                    value={editing.caption ?? ""}
+                    disabled={saving}
+                    placeholder="Información complementaria"
+                    onChange={(event) => setEditing((current) => current && { ...current, caption: event.target.value })}
+                  />
+                </label>
                 <button type="button" disabled={saving} onClick={saveEdit} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400">
                   <Save className="h-4 w-4" />
                   Guardar cambios
