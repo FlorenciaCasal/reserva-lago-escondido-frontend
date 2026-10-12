@@ -63,6 +63,7 @@ export default function MediaGalleryManager({
   const [saving, setSaving] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [editing, setEditing] = React.useState<MediaGalleryItem | null>(null);
+  const [showYoutubeForm, setShowYoutubeForm] = React.useState(false);
   const [youtubeForm, setYoutubeForm] = React.useState<FormState>(emptyForm);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -137,6 +138,7 @@ export default function MediaGalleryManager({
       setItems(normalized);
       if (firstCreated) {
         setEditing(normalized.find((item) => item.id === firstCreated?.id) ?? firstCreated);
+        setShowYoutubeForm(false);
       }
       setSuccess(selected.length === 1 ? "Imagen agregada." : "Imagenes agregadas.");
     } catch (err) {
@@ -162,6 +164,7 @@ export default function MediaGalleryManager({
       });
       setItems(await normalizeRemote([...items, created]));
       setYoutubeForm(emptyForm);
+      setShowYoutubeForm(false);
       setSuccess("Video de YouTube agregado.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo agregar el video.");
@@ -236,18 +239,32 @@ export default function MediaGalleryManager({
           <h2 className={compact ? "text-sm font-semibold text-white" : "text-lg font-semibold text-white"}>{title}</h2>
           <p className="mt-1 text-sm text-neutral-400">{description}</p>
         </div>
-        <label className="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-800">
-          <Upload className="h-4 w-4" />
-          Agregar imagenes
-          <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
-            disabled={saving || uploading}
-            className="sr-only"
-            onChange={(event) => onUploadImages(event.target.files)}
-          />
-        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <label className="inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-800">
+            <Upload className="h-4 w-4" />
+            Agregar imagenes
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+              disabled={saving || uploading}
+              className="sr-only"
+              onChange={(event) => onUploadImages(event.target.files)}
+            />
+          </label>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => {
+              setShowYoutubeForm((current) => !current);
+              setEditing(null);
+            }}
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-800 disabled:opacity-60"
+          >
+            <LinkIcon className="h-4 w-4" />
+            Agregar video de YouTube
+          </button>
+        </div>
       </div>
 
       {(error || success) && (
@@ -305,7 +322,15 @@ export default function MediaGalleryManager({
                     <button type="button" disabled={saving || index === items.length - 1} onClick={() => move(item, 1)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800 disabled:opacity-40" aria-label="Bajar item">
                       <ArrowDown className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => setEditing(item)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800" aria-label="Editar item">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditing(item);
+                        setShowYoutubeForm(false);
+                      }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                      aria-label="Editar item"
+                    >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button type="button" disabled={saving} onClick={() => removeItem(item)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-900/70 text-red-200 hover:bg-red-950/50 disabled:opacity-40" aria-label="Eliminar item">
@@ -318,40 +343,14 @@ export default function MediaGalleryManager({
           )}
         </div>
 
+        {(editing || showYoutubeForm) && (
         <aside className="space-y-4 rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
-          <div>
-            <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-100">
-              <LinkIcon className="h-4 w-4" />
-              Agregar video de YouTube
-            </h3>
-            <div className="mt-3 space-y-3">
-              <input
-                className={inputClass}
-                value={youtubeForm.youtubeUrl}
-                disabled={saving}
-                placeholder="https://www.youtube.com/watch?v=..."
-                onChange={(event) => setYoutubeForm((current) => ({ ...current, youtubeUrl: event.target.value }))}
-              />
-              <textarea
-                className={`${inputClass} min-h-20 resize-y`}
-                value={youtubeForm.caption}
-                disabled={saving}
-                placeholder="Epigrafe opcional"
-                onChange={(event) => setYoutubeForm((current) => ({ ...current, caption: event.target.value }))}
-              />
-              <button type="button" disabled={saving || !youtubeForm.youtubeUrl.trim()} onClick={addYoutube} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400">
-                <Plus className="h-4 w-4" />
-                Agregar video
-              </button>
-            </div>
-          </div>
-
           {editing && (
-            <div className="border-t border-neutral-800 pt-4">
+            <div>
               <div className="flex items-center justify-between gap-3">
                 <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-100">
                   <ImageIcon className="h-4 w-4" />
-                  Editar item
+                  {editing.kind === "IMAGE" ? "Editar imagen" : "Editar video"}
                 </h3>
                 <button type="button" onClick={() => setEditing(null)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800" aria-label="Cancelar edicion">
                   <X className="h-4 w-4" />
@@ -394,7 +393,50 @@ export default function MediaGalleryManager({
               </div>
             </div>
           )}
+
+          {showYoutubeForm && (
+            <div className={editing ? "border-t border-neutral-800 pt-4" : ""}>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-100">
+                  <LinkIcon className="h-4 w-4" />
+                  Agregar video de YouTube
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowYoutubeForm(false);
+                    setYoutubeForm(emptyForm);
+                  }}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-700 text-neutral-200 hover:bg-neutral-800"
+                  aria-label="Cerrar formulario de video"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mt-3 space-y-3">
+                <input
+                  className={inputClass}
+                  value={youtubeForm.youtubeUrl}
+                  disabled={saving}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  onChange={(event) => setYoutubeForm((current) => ({ ...current, youtubeUrl: event.target.value }))}
+                />
+                <textarea
+                  className={`${inputClass} min-h-20 resize-y`}
+                  value={youtubeForm.caption}
+                  disabled={saving}
+                  placeholder="Epigrafe opcional"
+                  onChange={(event) => setYoutubeForm((current) => ({ ...current, caption: event.target.value }))}
+                />
+                <button type="button" disabled={saving || !youtubeForm.youtubeUrl.trim()} onClick={addYoutube} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400">
+                  <Plus className="h-4 w-4" />
+                  Agregar video
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
+        )}
       </div>
     </section>
   );
