@@ -258,13 +258,15 @@ export default function PillarPage({
                 ))}
               </div>
             )}
-            <Link
-              href="/proyectos"
-              className="mt-9 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-[#2F9F99]"
-            >
-              Ver todos los proyectos
-              <span aria-hidden="true">&rarr;</span>
-            </Link>
+            <div className="mt-9 flex justify-end">
+              <Link
+                href="/proyectos"
+                className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-[#2F9F99]"
+              >
+                Ver todos los proyectos
+                <span aria-hidden="true">&rarr;</span>
+              </Link>
+            </div>
           </div>
         </section>
       )}
