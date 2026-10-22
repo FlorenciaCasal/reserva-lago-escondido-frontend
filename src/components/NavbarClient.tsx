@@ -87,7 +87,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
                 />
               </Link>
               {/* NAV PÚBLICO (placeholders) */}
-              <div className="hidden sm:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
+              <div className="hidden lg:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
                 <div
                   className="relative"
                   onMouseEnter={() => {
@@ -97,7 +97,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
                   onMouseLeave={() => setProjectsOpen(false)}
                 >
                   <Link href="/proyectos" className="inline-flex items-center gap-1 hover:text-secondary-dark transition">
-                    PROYECTOS
+                    PROYECTOS DE CONSERVACIÓN
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${projectsOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                   </Link>
 
@@ -139,7 +139,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
 
 
             {/* ===== DERECHA: ACCIONES ===== */}
-            <div className="hidden sm:flex items-center gap-4 text-sm">
+            <div className="hidden lg:flex items-center gap-4 text-sm">
 
               {canAccessAdmin && (
                 <Link
@@ -188,7 +188,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
             {/* BOTÓN HAMBURGUESA (solo mobile) */}
             <button
               aria-label="Abrir menú"
-              className="sm:hidden text-primary px-2 py-1"
+              className="lg:hidden text-primary px-2 py-1"
               onClick={() => setOpen(true)}
             >
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -207,7 +207,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
       <div
         onClick={() => setOpen(false)}
         className={`
-    fixed inset-0 z-40 bg-black/50 sm:hidden
+    fixed inset-0 z-40 bg-black/50 lg:hidden
     transition-opacity duration-300
     ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
   `}
@@ -218,7 +218,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
         className={`
     fixed z-50 inset-y-0 left-0 w-72 max-w-[80vw]
     bg-neutral-950/90 border-r border-neutral-800
-    p-4 shadow-2xl sm:hidden
+    p-4 shadow-2xl lg:hidden
 
     transform transition-transform duration-300 ease-out
     ${open ? "translate-x-0" : "-translate-x-full"}
@@ -266,7 +266,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
                 href="/proyectos"
                 className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
               >
-                Proyectos
+                Proyectos de conservación
               </Link>
             </li>
 
