@@ -20,14 +20,6 @@ function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M4.98 3.5a2.48 2.48 0 1 0 0 4.96a2.48 2.48 0 0 0 0-4.96zM3 8.98h3.96V21H3zM9.98 8.98H13.8v1.64h.05c.53-1 1.84-2.05 3.8-2.05c4.06 0 4.8 2.67 4.8 6.14V21h-3.96v-5.3c0-1.26-.02-2.88-1.76-2.88c-1.76 0-2.03 1.37-2.03 2.78V21H9.98z" />
-    </svg>
-  );
-}
-
 function LocationIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -83,7 +75,8 @@ export default function Footer() {
             </Link>
           </div>
 
-          <div className="sm:justify-self-center">
+          <div className="sm:flex sm:justify-self-stretch sm:justify-center">
+            <div className="w-fit text-left">
             <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
               CONTACTO
             </h4>
@@ -96,6 +89,7 @@ export default function Footer() {
                 <LocationIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
                 <span>Ruta 40 kilómetro 1948, El Foyel, Río Negro, Argentina</span>
               </p>
+            </div>
             </div>
           </div>
 
@@ -110,22 +104,13 @@ export default function Footer() {
               <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <FacebookIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
               </Link>
-              <LinkedinIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
             </div>
           </div>
         </div>
 
         <div className="mt-5 border-t border-white/20 pt-3 sm:mt-8 sm:pt-5">
-          <div className="flex flex-col gap-2 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <div className="flex flex-col gap-2 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
             <p>© 2026 Reserva Natural Lago Escondido. Todos los derechos reservados.</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-6 sm:gap-y-2">
-              <a href="#" className="transition hover:text-white">
-                Términos y condiciones
-              </a>
-              <a href="#" className="transition hover:text-white">
-                Política de privacidad
-              </a>
-            </div>
           </div>
         </div>
       </div>
