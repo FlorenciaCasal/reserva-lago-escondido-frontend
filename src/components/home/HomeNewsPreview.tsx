@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HomeMobileCardCarousel from "@/components/home/HomeMobileCardCarousel";
 import { listPublicNews, newsDate, newsDisplayDate } from "@/services/news";
 import type { HomeContent } from "@/types/home";
 
@@ -20,6 +21,43 @@ export default async function HomeNewsPreview({ content }: { content: HomeConten
   if (!featuredNews) return null;
 
   const featuredDate = dateParts(newsDisplayDate(featuredNews));
+  const renderMobileNewsCard = (item: (typeof news)[number]) => {
+    const itemDate = dateParts(newsDisplayDate(item));
+
+    return (
+      <Link
+        key={item.id}
+        href={`/novedades/${item.slug}`}
+        className="group block overflow-hidden rounded-sm bg-white shadow-[0_10px_28px_-28px_rgba(15,23,42,0.45)] transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.45)]"
+      >
+        <div className="relative aspect-[16/10] overflow-hidden bg-neutral-200">
+          {item.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.imageUrl}
+              alt={item.title}
+              className="h-full w-full object-contain transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
+            />
+          ) : null}
+          <div className="absolute left-4 top-4 flex h-14 w-12 flex-col items-center justify-center rounded-sm bg-primary text-white shadow-lg shadow-black/10">
+            <span className="text-lg font-bold leading-none">{itemDate.day}</span>
+            <span className="mt-1 text-[10px] font-bold uppercase tracking-wide">{itemDate.month}</span>
+          </div>
+        </div>
+        <div className="p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
+            Novedad
+          </p>
+          <h3 className="mt-2 line-clamp-2 text-base font-semibold text-neutral-900 transition-colors [@media(hover:hover)]:group-hover:text-primary-dark">
+            {item.title}
+          </h3>
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-700">
+            {item.summary}
+          </p>
+        </div>
+      </Link>
+    );
+  };
 
   return (
     <section className="bg-[#EFF4F2] px-6 py-14 sm:px-8 sm:py-16">
@@ -30,7 +68,18 @@ export default async function HomeNewsPreview({ content }: { content: HomeConten
           </h2>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
+        <div className="mt-8">
+          <HomeMobileCardCarousel
+            label="Novedades"
+            previousLabel="Ver novedad anterior"
+            nextLabel="Ver novedad siguiente"
+            itemLabel="Ir a novedad"
+          >
+            {news.map((item) => renderMobileNewsCard(item))}
+          </HomeMobileCardCarousel>
+        </div>
+
+        <div className="mt-8 hidden gap-8 sm:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
           <Link href={`/novedades/${featuredNews.slug}`} className="group block">
           <article className="transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-30px_rgba(15,23,42,0.35)]">
             <div className="relative aspect-[16/10] overflow-hidden bg-neutral-200">

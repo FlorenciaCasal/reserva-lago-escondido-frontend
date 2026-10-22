@@ -1,9 +1,46 @@
 import Link from "next/link";
+import HomeMobileCardCarousel from "@/components/home/HomeMobileCardCarousel";
 import { listPublicProjects } from "@/services/projects";
 import type { HomeContent } from "@/types/home";
 
 export default async function HomeFeaturedProjects({ content }: { content: HomeContent }) {
   const projects = (await listPublicProjects()).slice(0, 4);
+  const renderProjectCard = (project: (typeof projects)[number]) => (
+    <article key={project.id} className="group overflow-hidden rounded-sm bg-white transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]">
+      <Link href={`/proyectos/${project.slug}`} className="block">
+        <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
+          {project.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              Sin imagen principal
+            </div>
+          )}
+        </div>
+        <div className="pt-5">
+          <h3 className="line-clamp-2 text-base font-semibold text-neutral-900">
+            {project.title}
+          </h3>
+          {project.summary && (
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-700">
+              {project.summary}
+            </p>
+          )}
+          <span className="mt-4 inline-flex text-xs font-bold uppercase tracking-[0.14em] text-primary transition group-hover:text-primary-dark">
+            Ver proyecto
+            <span className="ml-2 transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">
+              &rarr;
+            </span>
+          </span>
+        </div>
+      </Link>
+    </article>
+  );
 
   return (
     <section className="bg-white px-6 py-14 sm:px-8 sm:py-16">
@@ -16,7 +53,7 @@ export default async function HomeFeaturedProjects({ content }: { content: HomeC
           </div>
           <Link
             href="/proyectos"
-            className="group inline-flex text-xs font-bold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
+            className="group hidden text-xs font-bold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark sm:inline-flex"
           >
             {content.projectsCtaLabel}
             <span className="ml-2 transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">
@@ -25,43 +62,33 @@ export default async function HomeFeaturedProjects({ content }: { content: HomeC
           </Link>
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {projects.map((project) => (
-            <article key={project.id} className="group overflow-hidden rounded-sm bg-white transition-[transform,box-shadow] duration-300 ease-out [@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]">
-              <Link href={`/proyectos/${project.slug}`} className="block">
-                <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
-                  {project.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      className="h-full w-full object-cover transition duration-300 [@media(hover:hover)]:group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                      Sin imagen principal
-                    </div>
-                  )}
-                </div>
-                <div className="pt-5">
-                  <h3 className="line-clamp-2 text-base font-semibold text-neutral-900">
-                    {project.title}
-                  </h3>
-                  {project.summary && (
-                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-700">
-                      {project.summary}
-                    </p>
-                  )}
-                  <span className="mt-4 inline-flex text-xs font-bold uppercase tracking-[0.14em] text-primary transition group-hover:text-primary-dark">
-                    Ver proyecto
-                    <span className="ml-2 transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">
-                      &rarr;
-                    </span>
-                  </span>
-                </div>
-              </Link>
-            </article>
-          ))}
+        {projects.length > 0 && (
+          <div className="mt-8">
+            <HomeMobileCardCarousel
+              label="Proyectos destacados"
+              previousLabel="Ver proyecto anterior"
+              nextLabel="Ver proyecto siguiente"
+              itemLabel="Ir al proyecto"
+            >
+              {projects.map((project) => renderProjectCard(project))}
+            </HomeMobileCardCarousel>
+          </div>
+        )}
+
+        <div className="mt-8 hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-4">
+          {projects.map((project) => renderProjectCard(project))}
+        </div>
+
+        <div className="mt-8 flex justify-end sm:hidden">
+          <Link
+            href="/proyectos"
+            className="group inline-flex text-xs font-bold uppercase tracking-[0.16em] text-primary transition hover:text-primary-dark"
+          >
+            {content.projectsCtaLabel}
+            <span className="ml-2 transition-transform duration-300 [@media(hover:hover)]:group-hover:translate-x-1" aria-hidden="true">
+              &rarr;
+            </span>
+          </Link>
         </div>
       </div>
     </section>
