@@ -540,7 +540,7 @@ export default function ProjectEditForm({ projectId }: { projectId: string }) {
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition hover:bg-primary-dark disabled:bg-neutral-700 disabled:text-neutral-400 disabled:shadow-none"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
-              {saving ? "Guardando..." : "Guardar datos del proyecto"}
+              {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </section>
         </aside>
