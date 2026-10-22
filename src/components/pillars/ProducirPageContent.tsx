@@ -1,15 +1,17 @@
+"use client";
+
 import PillarSectionNav from "./PillarSectionNav";
-import type { ReactNode } from "react";
-import { Handshake, Leaf, Ruler, Sprout } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { ChevronLeft, ChevronRight, Handshake, Leaf, Ruler, Sprout } from "lucide-react";
 
 const whatWeDoBullets = [
+  "Producción de energía renovable mediante centrales hidroeléctricas de paso",
   "Huerta agroecológica de Ornamentales y Hortalizas",
   "Producción de frutas finas",
-  "Producción Ganadera (Vacuna, Porcina, Camélidos)",
-  "Apicultura y producción de miel",
-  // "Talleres de oficios y saberes",
-  "Producción de energía renovable mediante centrales hidroeléctricas de paso",
-  "Aprovechamiento forestal",
+  "Producción Ganadera",
+  // "Producción Ganadera (Vacuna, Porcina, Camélidos)",
+  // "Apicultura y producción de miel",
+  // "Aprovechamiento forestal",
 ];
 
 const principles = [
@@ -34,28 +36,35 @@ const initiatives = [
   {
     title: "Central hidroeléctrica de paso",
     text: "Generación de energía a partir del río mediante un sistema de paso, integrada a las actividades productivas de la Reserva.",
-    image: "/img/agua.jpg",
+    image: "/img/hidroelectrica.webp",
     alt: "Agua y paisaje natural vinculado a energía renovable",
     href: "https://www.patagoniaenergia.com/",
   },
   {
     title: "Huerta y producción agroecológica",
-    text: "Huerta, frutas y berries como líneas productivas a revisar, integradas al cuidado del entorno y al consumo local.",
-    image: "/img/escuela.jpg",
+    text: "Huerta y frutas finas como líneas productivas a revisar, integradas al cuidado del entorno y al consumo local.",
+    image: "/img/tomates.webp",
     alt: "Actividad productiva vinculada a la huerta agroecológica",
   },
   {
-    title: "Apicultura y producción de miel",
-    text: "Producción de miel y trabajo apícola como actividad histórica a validar dentro del relato productivo de la Reserva.",
-    image: "/img/particular.jpg",
-    alt: "Productos locales y materiales de producción",
+    // title: "Producción Ganadera (Vacuna, Porcina, Camélidos)",
+    title: "Producción Ganadera",
+    text: "Manejo responsable del ganado, con atención veterinaria y desarrollo productivo integrado al territorio.",
+    image: "/img/ganadera.webp",
+    alt: "Actividad productiva vinculada producción ganadera",
   },
-  {
-    title: "Aprovechamiento forestal",
-    text: "Prácticas de manejo y cuidado orientadas a preservar la salud del bosque, los suelos y los procesos naturales.",
-    image: "/img/alerces.jpg",
-    alt: "Bosque nativo asociado al manejo forestal y cuidado de suelos",
-  },
+  // {
+  //   title: "Apicultura y producción de miel",
+  //   text: "Producción de miel y trabajo apícola como actividad histórica a validar dentro del relato productivo de la Reserva.",
+  //   image: "/img/apicultura.png",
+  //   alt: "Productos locales y materiales de producción",
+  // },
+  // {
+  //   title: "Aprovechamiento forestal",
+  //   text: "Prácticas de manejo y cuidado orientadas a preservar la salud del bosque, los suelos y los procesos naturales.",
+  //   image: "/img/alerces.jpg",
+  //   alt: "Bosque nativo asociado al manejo forestal y cuidado de suelos",
+  // },
 ];
 
 function Eyebrow({ children }: { children: ReactNode }) {
@@ -67,6 +76,78 @@ function Eyebrow({ children }: { children: ReactNode }) {
 }
 
 export default function ProducirPageContent() {
+  const initiativesCarouselRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollInitiativesPrev, setCanScrollInitiativesPrev] = useState(false);
+  const [canScrollInitiativesNext, setCanScrollInitiativesNext] = useState(false);
+  const [activeInitiativesIndex, setActiveInitiativesIndex] = useState(0);
+  const [visibleInitiativesCount, setVisibleInitiativesCount] = useState(1);
+
+  const maxInitiativesIndex = Math.max(initiatives.length - visibleInitiativesCount, 0);
+  const shouldShowInitiativesControls = maxInitiativesIndex > 0;
+
+  const getInitiativeCardStep = useCallback(() => {
+    const carousel = initiativesCarouselRef.current;
+    const firstCard = carousel?.querySelector<HTMLElement>("[data-initiative-card]");
+    if (!carousel || !firstCard) {
+      return 0;
+    }
+
+    const carouselStyles = window.getComputedStyle(carousel);
+    const gap = Number.parseFloat(carouselStyles.columnGap || carouselStyles.gap || "0");
+    return firstCard.offsetWidth + gap;
+  }, []);
+
+  const updateInitiativesControls = useCallback(() => {
+    const carousel = initiativesCarouselRef.current;
+    if (!carousel) {
+      return;
+    }
+
+    const nextVisibleCount = window.matchMedia("(min-width: 1024px)").matches
+      ? 4
+      : window.matchMedia("(min-width: 640px)").matches
+        ? 2
+        : 1;
+    const nextMaxIndex = Math.max(initiatives.length - nextVisibleCount, 0);
+    const cardStep = getInitiativeCardStep();
+    const nextActiveIndex = cardStep > 0
+      ? Math.min(Math.max(Math.round(carousel.scrollLeft / cardStep), 0), nextMaxIndex)
+      : 0;
+    const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+
+    setVisibleInitiativesCount(nextVisibleCount);
+    setActiveInitiativesIndex(nextActiveIndex);
+    setCanScrollInitiativesPrev(carousel.scrollLeft > 2);
+    setCanScrollInitiativesNext(carousel.scrollLeft < maxScrollLeft - 2);
+  }, [getInitiativeCardStep]);
+
+  useEffect(() => {
+    updateInitiativesControls();
+    window.addEventListener("resize", updateInitiativesControls);
+
+    return () => {
+      window.removeEventListener("resize", updateInitiativesControls);
+    };
+  }, [updateInitiativesControls]);
+
+  function scrollToInitiative(index: number) {
+    const carousel = initiativesCarouselRef.current;
+    if (!carousel) {
+      return;
+    }
+
+    const cardStep = getInitiativeCardStep();
+    const nextIndex = Math.min(Math.max(index, 0), maxInitiativesIndex);
+    carousel.scrollTo({
+      left: cardStep * nextIndex,
+      behavior: "smooth",
+    });
+  }
+
+  function scrollInitiatives(direction: -1 | 1) {
+    scrollToInitiative(activeInitiativesIndex + direction);
+  }
+
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
       <section className="border-b border-neutral-100 bg-[#F7F7F5]">
@@ -134,7 +215,7 @@ export default function ProducirPageContent() {
           <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-neutral-200 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)] md:w-[390px] lg:w-[420px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/img/form.jpeg"
+              src="/img/producir2.webp"
               alt="Trabajo productivo en huerta agroecológica"
               className="h-full w-full object-cover"
             />
@@ -191,21 +272,38 @@ export default function ProducirPageContent() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {initiatives.map((initiative) => (
-            <article key={initiative.title} className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-[0_18px_40px_-34px_rgba(15,23,42,0.55)]">
-              <div className="aspect-[4/3] overflow-hidden bg-neutral-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={initiative.image} alt={initiative.alt} className="h-full w-full object-cover" />
-              </div>
-              <div className="flex flex-1 flex-col px-5 py-6">
-                <h3 className="font-serif text-lg font-semibold leading-tight text-neutral-900">
-                  {initiative.title}
-                </h3>
-                <p className="mt-4 text-sm leading-7 text-neutral-600">
-                  {initiative.text}
-                </p>
-                {/* {initiative.href ? (
+        <div className="mt-8">
+          <div
+            ref={initiativesCarouselRef}
+            onScroll={updateInitiativesControls}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                scrollInitiatives(-1);
+              }
+              if (event.key === "ArrowRight") {
+                event.preventDefault();
+                scrollInitiatives(1);
+              }
+            }}
+            tabIndex={0}
+            className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F9F99]/50 [&::-webkit-scrollbar]:hidden"
+            aria-label="Iniciativas y actividades"
+          >
+            {initiatives.map((initiative) => (
+              <article key={initiative.title} data-initiative-card className="flex h-auto min-w-0 shrink-0 basis-full snap-start flex-col overflow-hidden rounded-lg bg-white shadow-[0_18px_40px_-34px_rgba(15,23,42,0.55)] sm:basis-[calc((100%-1.5rem)/2)] lg:basis-[calc((100%-4.5rem)/4)]">
+                <div className="aspect-[4/3] overflow-hidden bg-neutral-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={initiative.image} alt={initiative.alt} className="h-full w-full object-cover" />
+                </div>
+                <div className="flex flex-1 flex-col px-5 py-6">
+                  <h3 className="font-serif text-lg font-semibold leading-tight text-neutral-900">
+                    {initiative.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-neutral-600">
+                    {initiative.text}
+                  </p>
+                  {/* {initiative.href ? (
                   <a
                     href={initiative.href}
                     target="_blank"
@@ -221,9 +319,51 @@ export default function ProducirPageContent() {
                     <span aria-hidden="true">→</span>
                   </span>
                 )} */}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {shouldShowInitiativesControls && (
+            <div className="mt-5 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => scrollInitiatives(-1)}
+                disabled={!canScrollInitiativesPrev}
+                aria-label="Ver iniciativas anteriores"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2F9F99]/35 text-[#2F9F99] transition hover:border-[#2F9F99] hover:bg-[#2F9F99]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F9F99]/60 disabled:pointer-events-none disabled:opacity-35"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              </button>
+
+              <div className="flex max-w-[60vw] flex-wrap items-center justify-center gap-2" aria-label="Posición del carrusel">
+                {Array.from({ length: maxInitiativesIndex + 1 }).map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => scrollToInitiative(index)}
+                    aria-label={`Ir a iniciativa ${index + 1}`}
+                    aria-current={activeInitiativesIndex === index ? "true" : undefined}
+                    className={`h-2.5 rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F9F99]/60 ${
+                      activeInitiativesIndex === index
+                        ? "w-6 bg-[#2F9F99]"
+                        : "w-2.5 bg-[#2F9F99]/30 hover:bg-[#2F9F99]/55"
+                    }`}
+                  />
+                ))}
               </div>
-            </article>
-          ))}
+
+              <button
+                type="button"
+                onClick={() => scrollInitiatives(1)}
+                disabled={!canScrollInitiativesNext}
+                aria-label="Ver más iniciativas"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2F9F99]/35 text-[#2F9F99] transition hover:border-[#2F9F99] hover:bg-[#2F9F99]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F9F99]/60 disabled:pointer-events-none disabled:opacity-35"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </main>
