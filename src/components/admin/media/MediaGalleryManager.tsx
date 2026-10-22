@@ -6,6 +6,15 @@ import type { MediaAsset, MediaGalleryItem, MediaGalleryItemInput } from "@/type
 
 const inputClass =
   "w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60";
+const DEFAULT_MAX_IMAGE_SIZE_MIB = 20;
+
+function imageUploadErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (message.toLowerCase().includes("supera el tamano maximo permitido") || message.toLowerCase().includes("supera el tamaño máximo permitido")) {
+    return `La imagen supera el límite configurado por el servidor. El valor predeterminado es ${DEFAULT_MAX_IMAGE_SIZE_MIB} MiB. Reducí su tamaño o convertí la fotografía a JPG o WebP antes de subirla.`;
+  }
+  return message || "No se pudieron subir las imagenes.";
+}
 
 type Props = {
   title: string;
@@ -142,7 +151,7 @@ export default function MediaGalleryManager({
       }
       setSuccess(selected.length === 1 ? "Imagen agregada." : "Imagenes agregadas.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudieron subir las imagenes.");
+      setError(imageUploadErrorMessage(err));
     } finally {
       setUploading(false);
     }
@@ -252,6 +261,9 @@ export default function MediaGalleryManager({
               onChange={(event) => onUploadImages(event.target.files)}
             />
           </label>
+          <p className="max-w-xs text-xs leading-5 text-neutral-500 sm:self-center">
+            Formatos admitidos: JPG, PNG, WebP, HEIC y HEIF. Límite predeterminado: 20 MiB por imagen.
+          </p>
           <button
             type="button"
             disabled={saving}

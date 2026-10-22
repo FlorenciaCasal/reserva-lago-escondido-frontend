@@ -25,7 +25,12 @@ export default function PublicMediaCarousel({ items, imageAltFallback, compact =
   );
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [playingId, setPlayingId] = React.useState<string | null>(null);
+  const [imageOrientation, setImageOrientation] = React.useState<"landscape" | "portrait" | "square" | null>(null);
   const active = sorted[activeIndex];
+
+  React.useEffect(() => {
+    setImageOrientation(null);
+  }, [active?.id]);
 
   if (!active) return null;
 
@@ -34,8 +39,18 @@ export default function PublicMediaCarousel({ items, imageAltFallback, compact =
     setActiveIndex((index + sorted.length) % sorted.length);
   }
 
-  const frameClass = compact ? "aspect-[16/9] max-h-[360px]" : "aspect-video max-h-[520px]";
-  const mediaShellClass = compact ? "mx-auto w-full max-w-[640px]" : "mx-auto w-full max-w-[924px]";
+  const compactFrame = compact ? "max-h-[360px]" : "max-h-[520px]";
+  const isContainedImage = active.kind === "IMAGE" && imageOrientation && imageOrientation !== "landscape";
+  const frameClass = isContainedImage
+    ? `${compactFrame} w-fit max-w-full`
+    : compact
+      ? "aspect-[16/9] max-h-[360px]"
+      : "aspect-video max-h-[520px]";
+  const mediaShellClass = isContainedImage
+    ? `mx-auto w-fit max-w-full ${compactFrame}`
+    : compact
+      ? "mx-auto w-full max-w-[640px]"
+      : "mx-auto w-full max-w-[924px]";
 
   return (
     <figure className="space-y-3">
@@ -46,7 +61,15 @@ export default function PublicMediaCarousel({ items, imageAltFallback, compact =
             <img
               src={active.url}
               alt={active.altText || active.caption || imageAltFallback}
-              className="h-full w-full object-contain"
+              onLoad={(event) => {
+                const { naturalWidth, naturalHeight } = event.currentTarget;
+                setImageOrientation(naturalWidth === naturalHeight ? "square" : naturalWidth > naturalHeight ? "landscape" : "portrait");
+              }}
+              className={
+                isContainedImage
+                  ? `block h-auto max-w-full w-auto object-contain ${compact ? "max-h-[360px]" : "max-h-[520px]"}`
+                  : "h-full w-full object-contain"
+              }
             />
           ) : isYoutube(active) ? (
             playingId === active.id ? (
