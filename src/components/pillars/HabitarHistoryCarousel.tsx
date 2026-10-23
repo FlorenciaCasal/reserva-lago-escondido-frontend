@@ -14,45 +14,40 @@ export type MediaSlide =
     };
 
 const mediaItems: MediaSlide[] = [
-  {
+    {
     type: "image",
-    src: "/img/circuito4.jpg",
-    alt: "Lago y montañas de la Reserva Natural Lago Escondido",
+    src: "/img/1996.webp",
+    alt: "Vista hist\u00f3rica del Lago Escondido y su entorno en 1996",
   },
   {
     type: "image",
-    src: "/img/home.jpg",
-    alt: "Vista panorámica de montañas y lago",
+    src: "/img/2004.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2004",
+  },
+ {
+    type: "image",
+    src: "/img/2011.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2011",
+  },
+ {
+    type: "image",
+    src: "/img/2018.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2018",
   },
   {
     type: "image",
-    src: "/img/alerces2.jpg",
-    alt: "Detalle de vegetación nativa",
+    src: "/img/2022.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2022",
   },
-  {
+{
     type: "image",
-    src: "/img/alerces.jpg",
-    alt: "Bosque nativo de la reserva",
+    src: "/img/2025.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2025",
   },
-  {
+{
     type: "image",
-    src: "/img/escuela.jpg",
-    alt: "Registro histórico de actividades en la reserva",
-  },
-  {
-    type: "image",
-    src: "/img/agua.jpg",
-    alt: "Lago rodeado de montañas",
-  },
-  {
-    type: "image",
-    src: "/img/didymo.jpg",
-    alt: "Detalle de corteza y naturaleza",
-  },
-  {
-    type: "image",
-    src: "/img/circuito2.jpg",
-    alt: "Muelle y paisaje lacustre",
+    src: "/img/2026-reacondicionada.webp",
+    alt: "Vista del Lago Escondido y su entorno en 2026",
   },
 ];
 
@@ -113,7 +108,7 @@ export default function HabitarHistoryCarousel() {
     <div
       role="group"
       aria-roledescription="carrusel"
-      aria-label="Fotografías y videos de nuestra historia"
+      aria-label="Fotograf\u00edas y videos de nuestra historia"
       onKeyDown={handleKeyDown}
       className="relative aspect-[4/3] w-full min-w-0 overflow-hidden rounded-lg bg-neutral-200 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)]"
     >
@@ -175,7 +170,7 @@ export default function HabitarHistoryCarousel() {
             <button
               key={slide.src}
               type="button"
-              aria-label={`Mostrar ${slide.type === "video" ? "video" : "fotografía"} ${index + 1} de ${mediaItems.length}: ${slideDescription(slide)}`}
+              aria-label={`Mostrar ${slide.type === "video" ? "video" : "fotograf\u00eda"} ${index + 1} de ${mediaItems.length}: ${slideDescription(slide)}`}
               aria-current={index === activeIndex ? "true" : undefined}
               onClick={() => selectSlide(index)}
               className="flex h-8 w-7 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
@@ -186,7 +181,7 @@ export default function HabitarHistoryCarousel() {
         </div>
       </div>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {activeIndex + 1} de {mediaItems.length}. {item.type === "video" ? "Video." : "Fotografía."} {slideDescription(item)}
+        {activeIndex + 1} de {mediaItems.length}. {item.type === "video" ? "Video." : "Fotograf\u00eda."} {slideDescription(item)}
       </p>
     </div>
   );

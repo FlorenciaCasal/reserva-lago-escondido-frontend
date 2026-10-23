@@ -1,5 +1,5 @@
 import PillarSectionNav from "./PillarSectionNav";
-import { BookOpen, Leaf, Mountain, Users } from "lucide-react";
+import { Mountain } from "lucide-react";
 import HabitarHistoryCarousel from "./HabitarHistoryCarousel";
 
 const historyParagraphs = [
@@ -12,23 +12,20 @@ const activities = [
   {
     title: "Jornadas",
     text: "Encuentros de trabajo y participación comunitaria para compartir experiencias, planificar acciones y fortalecer el vínculo con la reserva.",
-    image: "/img/escuela.jpg",
+    image: "/img/jornadas.webp",
     alt: "Grupo participando de una jornada en la reserva",
-    icon: Users,
   },
   {
     title: "Capacitaciones",
     text: "Espacios de formación para seguir aprendiendo sobre el territorio, sus ecosistemas y las buenas prácticas para su cuidado.",
-    image: "/img/alerces2.jpg",
+    image: "/img/capacitaciones.webp",
     alt: "Ave y vegetación nativa como referencia de capacitación ambiental",
-    icon: BookOpen,
   },
   {
     title: "Facilitaciones",
     text: "Acompañamos procesos, brindamos herramientas y generamos espacios de diálogo para una convivencia sostenible.",
-    image: "/img/agua.jpg",
+    image: "/img/facilitaciones.webp",
     alt: "Paisaje de lago y montañas de la reserva",
-    icon: Leaf,
   },
 ];
 
@@ -115,36 +112,29 @@ export default function HabitarPageContent() {
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {activities.map((activity) => {
-            const ActivityIcon = activity.icon;
-
-            return (
-              <article key={activity.title} className="overflow-hidden rounded-lg bg-white shadow-[0_18px_40px_-34px_rgba(15,23,42,0.55)]">
-                <div className="relative aspect-[16/9] overflow-hidden bg-neutral-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={activity.image} alt={activity.alt} className="h-full w-full object-cover" />
-                  <span className="absolute -bottom-7 left-6 flex h-14 w-14 items-center justify-center rounded-full bg-[#D8F1E8] text-neutral-800 shadow-[0_10px_25px_-18px_rgba(15,23,42,0.5)]">
-                    <ActivityIcon className="h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
-                  </span>
-                </div>
-                <div className="flex min-h-[230px] flex-col px-6 pb-6 pt-11">
-                  <h3 className="font-serif text-xl font-semibold leading-tight text-neutral-900">
-                    {activity.title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-7 text-neutral-600">
-                    {activity.text}
-                  </p>
-                  {/* <button
+          {activities.map((activity) => (
+            <article key={activity.title} className="overflow-hidden rounded-lg bg-white shadow-[0_18px_40px_-34px_rgba(15,23,42,0.55)]">
+              <div className="relative aspect-[16/9] overflow-hidden bg-neutral-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={activity.image} alt={activity.alt} className="h-full w-full object-cover" />
+              </div>
+              <div className="flex min-h-[230px] flex-col px-6 pb-6 pt-11">
+                <h3 className="font-serif text-xl font-semibold leading-tight text-neutral-900">
+                  {activity.title}
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-neutral-600">
+                  {activity.text}
+                </p>
+                {/* <button
                     type="button"
                     className="mt-auto inline-flex w-fit items-center gap-2 pt-5 text-xs font-bold uppercase tracking-wide text-[#2F9F99]"
                   >
                     Ver más
                     <span aria-hidden="true">&rarr;</span>
                   </button> */}
-                </div>
-              </article>
-            );
-          })}
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </main>
