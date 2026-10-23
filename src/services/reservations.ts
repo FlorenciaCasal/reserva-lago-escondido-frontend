@@ -2,7 +2,7 @@ import type { ReservationFormData } from "@/types/reservation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-type BackendError = { code?: string; message?: string; detail?: string };
+type BackendError = { code?: string; error?: string; message?: string; detail?: string };
 type AppError = Error & { code?: string };
 
 function makeError(message: string, code?: string): AppError {
@@ -111,7 +111,7 @@ export async function submitReservation(data: ReservationFormData): Promise<{ id
 
     // 400/422: validaciones de negocio
     if (res.status === 400 || res.status === 422) {
-      throw makeError(server?.message ?? server?.detail ?? "Datos inválidos.", server?.code ?? "VALIDATION");
+      throw makeError(server?.error ?? server?.message ?? server?.detail ?? "Datos inválidos.", server?.code ?? "VALIDATION");
     }
 
     // 429: rate limiting (por si algún día lo agregás)

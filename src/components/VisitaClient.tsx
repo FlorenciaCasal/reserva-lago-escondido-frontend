@@ -28,7 +28,7 @@ export default function VisitaPage() {
   useEffect(() => {
     getPublicBookingFlags()
       .then(setFlags)
-      .catch(() => setFlags({ individualEnabled: true, schoolEnabled: true })); // fallback permisivo
+      .catch(() => setFlags(null));
   }, []);
 
   // 👇 Si la URL viene con ?step=..., al refrescar limpiamos y volvemos al wizard
@@ -78,10 +78,16 @@ export default function VisitaPage() {
                     // 🚧 Guardia extra: si escuela está deshabilitada, no avancemos
                     if (
                       visitorType === "INSTITUCION_EDUCATIVA" &&
-                      flags && !flags.schoolEnabled
+                      flags?.schoolEnabled !== true
                     ) {
                       toast("En este momento no tenemos disponibilidad para instituciones educativas.");
                       return; // no abrir el form ni tocar la URL
+                    }
+                    if (
+                      visitorType === "PARTICULAR" &&
+                      flags?.individualEnabled !== true
+                    ) {
+                      return;
                     }
 
                     const url = `${pathname}?step=0` +
