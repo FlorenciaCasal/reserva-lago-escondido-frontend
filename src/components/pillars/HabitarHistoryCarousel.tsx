@@ -17,7 +17,7 @@ const mediaItems: MediaSlide[] = [
     {
     type: "image",
     src: "/img/1996.webp",
-    alt: "Vista hist\u00f3rica del Lago Escondido y su entorno en 1996",
+    alt: "Vista histórica del Lago Escondido y su entorno en 1996",
   },
   {
     type: "image",
