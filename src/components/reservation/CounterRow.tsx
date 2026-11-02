@@ -18,11 +18,11 @@ export function CounterRow({
         <div className="text-xs text-gray-700">{subtitle}</div>
       </div>
       <div className="flex items-center gap-3">
-        <button type="button" onClick={() => onChange(value - 1)} className="rounded border border-white/30 px-2 py-1 hover:bg-white/10">
+        <button type="button" onClick={() => onChange(value - 1)} className="rounded border border-white/30 px-2 py-1 hover:bg-white/10" aria-label={`Disminuir ${title}`}>
           -
         </button>
         <span className="w-6 text-center">{value}</span>
-        <button type="button" onClick={() => onChange(value + 1)} className="rounded border border-white/30 px-2 py-1 hover:bg-white/10">
+        <button type="button" onClick={() => onChange(value + 1)} className="rounded border border-white/30 px-2 py-1 hover:bg-white/10" aria-label={`Aumentar ${title}`}>
           +
         </button>
       </div>
