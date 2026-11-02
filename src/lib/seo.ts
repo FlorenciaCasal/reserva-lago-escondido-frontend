@@ -46,7 +46,7 @@ export function organizationJsonLd() {
     "@id": siteUrl(organizationId),
     name: siteName,
     url: siteUrl("/"),
-    logo: siteUrl("/img/logoReserva.png"),
+    logo: siteUrl("/img/logoNuevoColor.png"),
     email: "info@reservalagoescondido.com.ar",
     address: {
       "@type": "PostalAddress",

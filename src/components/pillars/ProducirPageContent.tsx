@@ -42,7 +42,7 @@ const initiatives = [
   },
   {
     title: "Huerta y producción agroecológica",
-    text: "Huerta y frutas finas como líneas productivas a revisar, integradas al cuidado del entorno y al consumo local.",
+    text: "Huerta y frutas finas como líneas productivas, integradas al cuidado del entorno y al consumo local.",
     image: "/img/tomates.webp",
     alt: "Actividad productiva vinculada a la huerta agroecológica",
   },

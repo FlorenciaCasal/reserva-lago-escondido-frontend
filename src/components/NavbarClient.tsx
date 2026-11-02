@@ -70,20 +70,20 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
       >
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-12 xl:px-16">
           {/* <div className="flex items-center justify-between gap-4 py-1"> */}
-          <div className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-0">
 
             {/* ===== IZQUIERDA: LOGO + NAV ===== */}
             <div className="flex items-center gap-0">
               {/* LOGO */}
               <Link href="/">
                 <Image
-                  src="/img/logoReserva.png"
+                  src="/img/logoNuevoColor.png"
                   alt="Reserva Natural Lago Escondido"
                   width={120}
                   height={40}
                   priority
                   // className="w-auto h-10 md:h-12 "
-                   className="w-auto h-8 sm:h-10 md:h-12"
+                   className="w-auto h-16 sm:h-18 md:h-20 lg:h-22 xl:h-24 "
                 />
               </Link>
               {/* NAV PÚBLICO (placeholders) */}

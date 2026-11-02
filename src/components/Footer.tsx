@@ -66,11 +66,11 @@ export default function Footer() {
           <div className="sm:justify-self-start">
             <Link href="/" aria-label="Ir al inicio">
               <Image
-                src="/img/logo1.png" 
+                src="/img/logoNuevoBlanco.png"
                 alt="Reserva Natural Lago Escondido"
-                width={140}
-                height={48}
-                className="h-auto w-24 brightness-0 invert sm:w-32"
+                width={200}
+                height={80}
+                className="h-auto w-36 ml-[-20px] brightness-0 invert sm:w-44 sm:ml-[-10px] xl:w-56"
               />
             </Link>
           </div>

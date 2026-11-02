@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     description:
       "Promovemos actividades productivas sustentables que respeten la naturaleza y a las comunidades.",
     url: siteUrl("/producir"),
-    images: [ogImage("/img/form.jpeg")],
+    images: [ogImage("/img/producir2.webp")],
     type: "website",
   },
 };

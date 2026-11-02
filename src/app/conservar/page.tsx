@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     description:
       "Conservamos la biodiversidad y los ecosistemas para las generaciones presentes y futuras.",
     url: siteUrl("/conservar"),
-    images: [ogImage("/img/alerces.jpg")],
+    images: [ogImage("/img/conservarPrincipal.webp")],
     type: "website",
   },
 };
@@ -48,7 +48,7 @@ export default async function ConservarPage() {
       body={content.whatWeDoText}
       bullets={content.bullets}
       mainImage={{
-        src: "/img/alerces.jpg",
+        src: "/img/conservarPrincipal.webp",
         alt: "Paisaje natural de lago y montanas",
         variant: "portrait",
       }}
