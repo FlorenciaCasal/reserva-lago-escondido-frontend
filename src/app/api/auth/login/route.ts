@@ -7,11 +7,19 @@ import { publicFetch } from "@/app/api/_backend";
 export async function POST(req: NextRequest) {
     const body = await req.json();
 
-    const resp = await publicFetch(`/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
+    let resp: Response;
+    try {
+        resp = await publicFetch(`/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    } catch {
+        return NextResponse.json(
+            { code: "BACKEND_UNAVAILABLE", message: "No se pudo conectar con el servidor" },
+            { status: 502 }
+        );
+    }
 
     const text = await resp.text();
     if (!resp.ok) {

@@ -47,8 +47,14 @@ export default function LoginPage() {
         credentials: "include",
       });
       if (!resp.ok) {
-        const e = await resp.json().catch(() => ({}));
-        throw new Error(e.message || "Credenciales inválidas");
+        if (resp.status === 401) {
+          setErrorMsg("Credenciales inválidas");
+        } else if (resp.status === 502) {
+          setErrorMsg("No se pudo conectar con el servidor. Intentá nuevamente más tarde");
+        } else {
+          setErrorMsg("Ocurrió un error en el servidor. Intentá nuevamente");
+        }
+        return;
       }
       // // cookie quedó seteada por el route; listo
       // router.push("/admin");
@@ -64,7 +70,7 @@ export default function LoginPage() {
       window.location.replace(next);
     } catch (error) {
       console.error("Error en login:", error);
-      setErrorMsg(error instanceof Error ? error.message : "Error al iniciar sesión");
+      setErrorMsg("No se pudo conectar con el servidor. Intentá nuevamente más tarde");
     }
   };
 
