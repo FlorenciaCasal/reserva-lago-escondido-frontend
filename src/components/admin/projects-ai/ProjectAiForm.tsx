@@ -184,7 +184,8 @@ export default function ProjectAiForm() {
   );
   const canSave =
     draft?.title.trim() && draft.summary.trim() && draft.content.trim() && draft.slug.trim();
-  const busy = generating || saving;
+  const uploadingFiles = uploadingMainImage || uploadingDocument;
+  const busy = generating || saving || uploadingFiles;
   const inputImageUrl = getPublicImageUrl(input.imageUrl);
   const draftImageUrl = getPublicImageUrl(activeDraft.imageUrl);
   const mainYoutubeVideoId = parseYouTubeVideoId(mainYoutubeUrl);
@@ -290,6 +291,11 @@ export default function ProjectAiForm() {
   }
 
   async function onGenerate() {
+    if (uploadingFiles) {
+      setError("Esperá a que terminen las subidas antes de generar el borrador.");
+      return;
+    }
+
     setGenerating(true);
     setError(null);
     setSuccess(null);
@@ -313,6 +319,10 @@ export default function ProjectAiForm() {
 
   async function onSave() {
     if (!draft) return;
+    if (uploadingFiles) {
+      setError("Esperá a que terminen las subidas antes de guardar el proyecto.");
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -1019,6 +1029,11 @@ export default function ProjectAiForm() {
         </div>
 
         <div className="flex justify-end border-t border-neutral-800 p-4">
+          {uploadingFiles && (
+            <p className="mr-4 self-center text-xs text-primary-light">
+              Esperá a que terminen las subidas para continuar.
+            </p>
+          )}
           <button
             type="button"
             disabled={!canGenerate || busy}
