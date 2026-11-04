@@ -1,73 +1,6 @@
-// "use client";
-// import { usePathname } from "next/navigation";
-// // import Link from "next/link";
-// // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// // import { faSquareFacebook, faInstagram } from "@fortawesome/free-brands-svg-icons";
-
-
-// export default function Footer() {
-//   const pathname = usePathname();
-//   const HIDE_ON: string[] = ["/politicas-de-visita"];
-//   const hide = HIDE_ON.includes(pathname);
-
-//   if (hide) return null; // ⟵ no se renderiza nada
-
-//   return (
-//     // <footer className="w-full bg-[#D3B04D] text-white py-6 mt-10">
-//     // <footer className="w-full bg-[#E9E4DA] text-white py-4 sm:py-6">
-//     <footer className="w-full bg-[#fff] text-black py-4">
-//       {/* <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4"> */}
-//       {/* <div className="mx-auto max-w-6xl px-4 flex flex-col items-center justify-between gap-4"> */}
-//       <div
-//         className="
-//           mx-auto max-w-6xl px-4
-//           flex flex-col sm:flex-row
-//           items-center sm:items-center
-//           justify-between
-//           gap-4
-//           w-full
-//         "
-//       >
-//         {/* COPYRIGHT */}
-//         <span className="md:text-sm header text-xs opacity-90">
-//           © {new Date().getFullYear()} Reserva Natural Lago Escondido
-//         </span>
-
-//         {/* ENLACES (opcionales) */}
-//         {/* <div className="flex items-center gap-6 md:text-sm   font-size: 12pxtext-xs opacity-90"> */}
-
-
-
-
-//         {/*          Actualizar con face e instagram de la reserva!!!!
-
-//         <div className="flex items-center gap-6">
-//           <Link
-//             href="https://www.facebook.com/lagoescondido.ok"
-//             target="_blank"
-//           >
-//             <FontAwesomeIcon
-//               icon={faSquareFacebook}
-//               size="lg"
-//               className="hover:opacity-80 transition"
-//             />
-
-//           </Link>
-//           <Link href="https://www.instagram.com/lagoescondido.ok" target="_blank">
-//             <FontAwesomeIcon
-//               icon={faInstagram}
-//               size="lg"
-//               className="hover:opacity-80 transition"
-//             />
-//           </Link>
-//         </div> */}
-//       </div>
-//     </footer>
-//   );
-// }
-
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -87,10 +20,36 @@ function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
+function LocationIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M4.98 3.5a2.48 2.48 0 1 0 0 4.96a2.48 2.48 0 0 0 0-4.96zM3 8.98h3.96V21H3zM9.98 8.98H13.8v1.64h.05c.53-1 1.84-2.05 3.8-2.05c4.06 0 4.8 2.67 4.8 6.14V21h-3.96v-5.3c0-1.26-.02-2.88-1.76-2.88c-1.76 0-2.03 1.37-2.03 2.78V21H9.98z" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      {...props}
+    >
+      <path d="M12 21s7-5.3 7-11a7 7 0 0 0-14 0c0 5.7 7 11 7 11z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+function EmailIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      {...props}
+    >
+      <path d="M4 6h16v12H4z" />
+      <path d="m4 7 8 6 8-6" />
     </svg>
   );
 }
@@ -101,57 +60,60 @@ export default function Footer() {
   if (HIDE_ON.includes(pathname)) return null;
 
   return (
-    <footer id="footer" className="w-full bg-primary text-white scroll-mt-24">
-      <div className="px-6 py-6">
-        <div className="flex justify-center">
-          {/* <div className="grid grid-cols-1 gap-10 sm:grid-cols-3 w-full max-w-5xl">
-       */}
-          <div className="flex flex-col gap-6 sm:flex-row md:gap-20 lg:gap-44 xl:gap-86">
-            {/* VISÍTANOS */}
-            <div>
-              <h4 className="md:text-sm text-xs tracking-wide opacity-90 mb-2">
-                VISÍTANOS
-              </h4>
-              <p className="md:text-smtext-xs opacity-80 leading-relaxed">
-                Ruta 40 kilómetro 1948, El Foyel,
-                <br />
-                Río Negro, Argentina
+    <footer id="footer" className="w-full scroll-mt-24 bg-teal-950 text-white">
+      <div className="mx-auto max-w-6xl px-3 py-5 sm:px-2 sm:py-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_1fr_1fr] sm:items-start sm:gap-8">
+          <div className="sm:justify-self-start">
+            <Link href="/" aria-label="Ir al inicio">
+              <Image
+                src="/img/logoNuevoBlanco.png"
+                alt="Reserva Natural Lago Escondido"
+                width={200}
+                height={80}
+                className="h-auto w-36 ml-[-20px] brightness-0 invert sm:w-44 sm:ml-[-10px] xl:w-56"
+              />
+            </Link>
+          </div>
+
+          <div className="sm:flex sm:justify-self-stretch sm:justify-center">
+            <div className="w-fit text-left">
+            <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
+              CONTACTO
+            </h4>
+            <div className="space-y-1.5 text-xs leading-relaxed opacity-85 sm:space-y-2 md:text-sm">
+              <a href="mailto:info@reservalagoescondido.com.ar" className="flex items-start gap-2 break-all hover:underline">
+                <EmailIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
+                <span>info@reservalagoescondido.com.ar</span>
+              </a>
+              <p className="flex items-start gap-2">
+                <LocationIcon className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
+                <span>Ruta 40 kilómetro 1948, El Foyel, Río Negro, Argentina</span>
               </p>
             </div>
-
-            {/* CONTACTO */}
-            <div>
-              <h4 className="md:text-sm footer text-xs tracking-wide opacity-90 mb-2">
-                CONTACTO
-              </h4>
-              <p className="md:text-sm   font-size: 9pxtext-xs opacity-80 break-all">
-                <a href="mailto:info@reservalagoescondido.com.ar" className="hover:underline">
-                  info@reservalagoescondido.com.ar
-                </a>
-              </p>
             </div>
+          </div>
 
-            {/* SEGUINOS */}
-            <div>
-              <h4 className="md:text-sm text-xs tracking-wide opacity-90 mb-2">
-                SEGUINOS
-              </h4>
-              <div className="flex items-center gap-4">
-                <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <InstagramIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-                </Link>
-                <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                  <FacebookIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-                </Link>
-                <LinkedinIcon className="w-5 h-5 opacity-80 hover:opacity-100" />
-              </div>
+          <div className="sm:justify-self-end sm:text-right pr-3">
+            <h4 className="mb-2 text-xs tracking-wide opacity-90 sm:mb-3 md:text-sm">
+              SEGUINOS
+            </h4>
+            <div className="flex items-center gap-3 sm:gap-4 sm:justify-end">
+              <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <InstagramIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
+              </Link>
+              <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <FacebookIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
+              </Link>
             </div>
+          </div>
+        </div>
 
+        <div className="mt-5 border-t border-white/20 pt-3 sm:mt-8 sm:pt-5">
+          <div className="flex flex-col gap-2 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-center sm:gap-3">
+            <p>© 2026 Reserva Natural Lago Escondido. Todos los derechos reservados.</p>
           </div>
         </div>
       </div>
     </footer>
-
-
   );
 }

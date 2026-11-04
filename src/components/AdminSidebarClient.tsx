@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 
 export default function AdminSidebarClient({
     isAdmin,
+    isAdminLimit,
     children,
 }: {
     isAdmin: boolean;
+    isAdminLimit: boolean;
     children: React.ReactNode;
 }) {
     const [open, setOpen] = React.useState(false);
@@ -24,6 +26,13 @@ export default function AdminSidebarClient({
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, []);
+
+    const canManageProjects = isAdmin || isAdminLimit;
+    const canManageNews = isAdmin || isAdminLimit;
+    const canManagePreserve = isAdmin || isAdminLimit;
+    const canManageHome = isAdmin || isAdminLimit;
+    const isNewsPath = pathname === "/admin/novedades" || pathname.startsWith("/admin/novedades/") || pathname === "/admin/novedades-ia";
+    const isPreservePath = pathname === "/admin/preservar";
 
     return (
         <>
@@ -71,11 +80,35 @@ export default function AdminSidebarClient({
                                     Usuarios
                                 </Link>
                             )}
+                            {canManageProjects && (
+                                <Link href="/admin/proyectos"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Proyectos
+                                </Link>
+                            )}
+                            {canManageNews && (
+                                <Link href="/admin/novedades"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Novedades
+                                </Link>
+                            )}
+                            {canManageHome && (
+                                <Link href="/admin/home"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${pathname === "/admin/home" ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Home
+                                </Link>
+                            )}
+                            {canManagePreserve && (
+                                <Link href="/admin/preservar"
+                                    className={`px-3 py-2 rounded-lg text-sm hover:bg-neutral-800 ${isPreservePath ? "bg-neutral-800 text-white" : "text-neutral-300"}`}>
+                                    Conservar
+                                </Link>
+                            )}
 
                         </div>
                     </div>
                     {/* <main className="col-span-12 px-4 min-w-0"> */}
-                    <main className="col-span-12 px-2 min-w-0">
+                    <main className="col-span-12 px-0 md:px-2 min-w-0">
                         {children}
                     </main>
                 </div>
@@ -141,6 +174,46 @@ export default function AdminSidebarClient({
                                         className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/usuarios" ? "bg-neutral-900" : ""}`}
                                     >
                                         Usuarios
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageProjects && (
+                                <li>
+                                    <Link
+                                        href="/admin/proyectos"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/proyectos" || pathname.startsWith("/admin/proyectos/") ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Proyectos
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageNews && (
+                                <li>
+                                    <Link
+                                        href="/admin/novedades"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${isNewsPath ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Novedades
+                                    </Link>
+                                </li>
+                            )}
+                            {canManageHome && (
+                                <li>
+                                    <Link
+                                        href="/admin/home"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${pathname === "/admin/home" ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Home
+                                    </Link>
+                                </li>
+                            )}
+                            {canManagePreserve && (
+                                <li>
+                                    <Link
+                                        href="/admin/preservar"
+                                        className={`block rounded-xl px-3 py-2 hover:bg-neutral-800 ${isPreservePath ? "bg-neutral-900" : ""}`}
+                                    >
+                                        Conservar
                                     </Link>
                                 </li>
                             )}

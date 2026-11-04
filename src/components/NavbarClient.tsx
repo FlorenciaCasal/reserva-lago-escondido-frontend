@@ -4,27 +4,58 @@ import { usePathname } from "next/navigation";
 import LogoutButton from "./LogoutButton";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import type { Project } from "@/types/project";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const PROJECTS_DROPDOWN_LIMIT = 8;
 
 export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLogged: boolean; isAdmin: boolean; isAdminLimit: boolean }) {
   const pathname = usePathname();
-  const isHome = pathname == "/";
   const showHomeLink = pathname !== "/";
-  const isVisitas = pathname == "/visitas";
   const showVisitasLink = pathname !== "/visitas";
-  const isCalendario = pathname == "/admin/calendario";
-  const isReservas = pathname == "/admin/reservas";
-  const isUsuarios = pathname == "/admin/usuarios";
+  const canAccessAdmin = isLogged && (isAdmin || isAdminLimit);
 
   // 👇 rutas donde NO queremos mostrar el navbar
   const HIDE_ON: string[] = ["/politicas-de-visita"];
+  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [publicProjects, setPublicProjects] = useState<Project[]>([]);
 
   const [open, setOpen] = useState(false); // ← menú mobile
 
   // cerrar drawer al cambiar de ruta
   useEffect(() => {
     setOpen(false);
+    setProjectsOpen(false);
   }, [pathname]);
 
+  async function loadPublicProjects() {
+    try {
+      const response = await fetch(`${API_URL}/api/projects`, { cache: "no-store" });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (!Array.isArray(data)) return;
+
+      setPublicProjects(
+        data
+          .filter((project: Project) => project.status === "PUBLISHED")
+          .sort((a: Project, b: Project) => {
+            if (a.featured !== b.featured) return a.featured ? -1 : 1;
+
+            const aPublishedAt = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+            const bPublishedAt = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+            if (aPublishedAt !== bPublishedAt) return bPublishedAt - aPublishedAt;
+
+            const aCreatedAt = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bCreatedAt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bCreatedAt - aCreatedAt;
+          })
+      );
+    } catch {
+      setPublicProjects([]);
+    }
+  }
   // return condicional DESPUÉS de hooks
   if (HIDE_ON.includes(pathname)) return null;
 
@@ -39,27 +70,65 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
       >
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-12 xl:px-16">
           {/* <div className="flex items-center justify-between gap-4 py-1"> */}
-          <div className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-0">
 
             {/* ===== IZQUIERDA: LOGO + NAV ===== */}
             <div className="flex items-center gap-0">
               {/* LOGO */}
               <Link href="/">
                 <Image
-                  src="/img/logoReserva.png"
+                  src="/img/logoNuevoColor.png"
                   alt="Reserva Natural Lago Escondido"
                   width={120}
                   height={40}
                   priority
                   // className="w-auto h-10 md:h-12 "
-                   className="w-auto h-8 sm:h-10 md:h-12"
+                   className="w-auto h-16 sm:h-18 md:h-20 lg:h-22 xl:h-24 "
                 />
               </Link>
               {/* NAV PÚBLICO (placeholders) */}
-              <div className="hidden sm:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
-                {/* <span className="cursor-default">PROYECTOS</span> */}
-                <Link href="/#proyectos" className="hover:text-secondary-dark transition">
-                  PROYECTOS
+              <div className="hidden lg:flex items-center gap-4 pl-10 lg:pl-18 text-sm text-primary">
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    setProjectsOpen(true);
+                    void loadPublicProjects();
+                  }}
+                  onMouseLeave={() => setProjectsOpen(false)}
+                >
+                  <Link href="/proyectos" className="inline-flex items-center gap-1 hover:text-secondary-dark transition">
+                    PROYECTOS DE CONSERVACIÓN
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${projectsOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                  </Link>
+
+                  {projectsOpen && publicProjects.length > 0 && (
+                    <div className="absolute left-0 top-full z-50 min-w-64 pt-3">
+                      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white text-primary shadow-xl shadow-black/10">
+                        <div className="max-h-80 overflow-y-auto py-2">
+                          {publicProjects.slice(0, PROJECTS_DROPDOWN_LIMIT).map((project) => (
+                            <Link
+                              key={project.id}
+                              href={`/proyectos/${project.slug}`}
+                              className="block px-4 py-2.5 text-sm leading-5 transition hover:bg-neutral-100 hover:text-secondary-dark"
+                            >
+                              {project.title}
+                            </Link>
+                          ))}
+                          {publicProjects.length > PROJECTS_DROPDOWN_LIMIT && (
+                            <Link
+                              href="/proyectos"
+                              className="block border-t border-neutral-100 px-4 py-2.5 text-sm font-semibold transition hover:bg-neutral-100 hover:text-secondary-dark"
+                            >
+                              Ver todos los proyectos
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Link href="/novedades" className="hover:text-secondary-dark transition">
+                  NOVEDADES
                 </Link>
                 {/* <span className="cursor-default">CONTACTO</span> */}
                 <Link href="/#footer" className="hover:text-secondary-dark transition">
@@ -70,9 +139,9 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
 
 
             {/* ===== DERECHA: ACCIONES ===== */}
-            <div className="hidden sm:flex items-center gap-4 text-sm">
+            <div className="hidden lg:flex items-center gap-4 text-sm">
 
-              {(isHome || isVisitas || isCalendario || isUsuarios || isReservas) && (isLogged && (isAdmin || isAdminLimit)) && (
+              {canAccessAdmin && (
                 <Link
                   href="/admin"
                   className="text-primary hover:text-secondary-dark transition pl-4"
@@ -119,7 +188,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
             {/* BOTÓN HAMBURGUESA (solo mobile) */}
             <button
               aria-label="Abrir menú"
-              className="sm:hidden text-primary px-2 py-1"
+              className="lg:hidden text-primary px-2 py-1"
               onClick={() => setOpen(true)}
             >
               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -138,7 +207,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
       <div
         onClick={() => setOpen(false)}
         className={`
-    fixed inset-0 z-40 bg-black/50 sm:hidden
+    fixed inset-0 z-40 bg-black/50 lg:hidden
     transition-opacity duration-300
     ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
   `}
@@ -149,7 +218,7 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
         className={`
     fixed z-50 inset-y-0 left-0 w-72 max-w-[80vw]
     bg-neutral-950/90 border-r border-neutral-800
-    p-4 shadow-2xl sm:hidden
+    p-4 shadow-2xl lg:hidden
 
     transform transition-transform duration-300 ease-out
     ${open ? "translate-x-0" : "-translate-x-full"}
@@ -192,7 +261,34 @@ export default function NavbarClient({ isLogged, isAdmin, isAdminLimit }: { isLo
               </li>
             )}
 
-            {(isHome || isVisitas || isCalendario || isUsuarios || isReservas) && (isLogged && isAdmin || isAdminLimit) && (
+            <li>
+              <Link
+                href="/proyectos"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Proyectos de conservación
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/novedades"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Novedades
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/#footer"
+                className="block rounded-xl px-3 py-2 hover:bg-neutral-800"
+              >
+                Contacto
+              </Link>
+            </li>
+
+            {canAccessAdmin && (
               <li>
                 <Link
                   href="/admin"

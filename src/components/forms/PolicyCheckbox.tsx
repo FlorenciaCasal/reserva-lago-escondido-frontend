@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import PoliciesModal from "./PoliciesModal";
 import PoliciesContent from "./PoliciesContent";
 
@@ -11,18 +11,20 @@ export default function PolicyCheckbox({
   onChange: (v: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const checkboxId = useId();
 
   return (
     <>
-      <label className="flex items-start gap-3 cursor-pointer">
+      <div className="flex items-start gap-3">
         <input
+          id={checkboxId}
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           className="mt-1"
         />
         <span className="text-sm">
-          Acepto las{" "}
+          <label htmlFor={checkboxId} className="cursor-pointer">Acepto las</label>{" "}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -31,7 +33,7 @@ export default function PolicyCheckbox({
             políticas de visita
           </button>
         </span>
-      </label>
+      </div>
 
       <PoliciesModal open={open} onClose={() => setOpen(false)}>
         <PoliciesContent />

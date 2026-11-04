@@ -1,5 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 
 export default function PoliciesModal({
   open,
@@ -10,6 +11,57 @@ export default function PoliciesModal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const firstFocusable = dialog?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    (firstFocusable ?? dialog)?.focus();
+
+    return () => {
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
+    };
+  }, [open]);
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const focusable = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) ?? []
+    ).filter((element) => !element.hasAttribute("disabled"));
+
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialogRef.current?.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   return (
     <AnimatePresence>
       {open && (
@@ -25,6 +77,12 @@ export default function PoliciesModal({
 
           {/* Modal */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="visit-policies-title"
+            tabIndex={-1}
+            onKeyDown={handleKeyDown}
             className="
               fixed inset-0 z-[1001]
               sm:inset-auto sm:top-1/2 sm:left-1/2
@@ -41,7 +99,7 @@ export default function PoliciesModal({
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b">
-              <h2 className="text-base font-semibold">
+              <h2 id="visit-policies-title" className="text-base font-semibold">
                 Políticas de visita
               </h2>
               <button
