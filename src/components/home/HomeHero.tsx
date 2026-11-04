@@ -9,6 +9,8 @@ export default function HomeHero({ content }: { content: HomeContent }) {
         alt="Reserva Natural Lago Escondido"
         fill
         priority
+        fetchPriority="high"
+        sizes="100vw"
         className="object-cover object-center lg:object-[center_25%]"
       />
       <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-start px-6 pb-0 pt-80 sm:min-h-[70vh] sm:px-8 xl:px-0 lg:pb-10 lg:pt-66">

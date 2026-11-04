@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Link from "next/link";
 
 
 type FormValues = {
@@ -83,13 +82,6 @@ export default function LoginPage() {
           {/* Encabezado */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Ingresar</h1>
-            <p className="mt-2 text-sm text-neutral-400">
-              Si todavía no tenés cuenta, {" "}
-              <Link href="/admin/usuarios" className="text-white underline-offset-4 hover:underline">
-                creá una
-              </Link>
-              .
-            </p>
           </div>
 
           {/* Formulario */}

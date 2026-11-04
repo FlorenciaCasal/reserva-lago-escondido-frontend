@@ -101,7 +101,9 @@ function normalizePillar(
 
 export async function getPublicHomeContent(): Promise<HomeContent> {
   try {
-    const res = await fetch(`${API_URL}/api/home/content`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/api/home/content`, {
+      next: { revalidate: 60 },
+    });
     if (!res.ok) return fallbackHomeContent;
 
     return normalizeContent(await res.json());
