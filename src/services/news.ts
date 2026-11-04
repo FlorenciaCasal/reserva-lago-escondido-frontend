@@ -14,6 +14,7 @@ import type {
   UpdateNewsInput,
 } from "@/types/news";
 import type { MediaGalleryItem, MediaGalleryItemInput } from "@/types/project";
+import { uploadMediaAsset } from "@/services/mediaUpload";
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => null);
@@ -150,27 +151,11 @@ export async function deleteNewsPermanently(id: string): Promise<void> {
 }
 
 export async function uploadNewsImage(file: File): Promise<NewsMediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/images", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<NewsMediaAsset>(res);
+  return uploadMediaAsset<NewsMediaAsset>(file, "IMAGE");
 }
 
 export async function uploadNewsVideo(file: File): Promise<NewsMediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/videos", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<NewsMediaAsset>(res);
+  return uploadMediaAsset<NewsMediaAsset>(file, "VIDEO");
 }
 
 export async function listAdminNewsImages(newsId: string): Promise<NewsImage[]> {

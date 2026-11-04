@@ -1,5 +1,6 @@
 import type { MediaAsset } from "@/types/project";
 import type { HomeContent, HomeContentInput } from "@/types/home";
+import { uploadMediaAsset } from "@/services/mediaUpload";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -125,13 +126,5 @@ export async function updateAdminHomeContent(input: HomeContentInput): Promise<H
 }
 
 export async function uploadHomeImage(file: File): Promise<MediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/images", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<MediaAsset>(res);
+  return uploadMediaAsset<MediaAsset>(file, "IMAGE");
 }

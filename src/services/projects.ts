@@ -17,6 +17,7 @@ import type {
   UpdateProjectInput,
 } from "@/types/project";
 import { fallbackProjects } from "@/data/projectsFallback";
+import { uploadMediaAsset } from "@/services/mediaUpload";
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => null);
@@ -71,38 +72,14 @@ function sortPublicProjects(projects: Project[]) {
 
 
 export async function uploadProjectImage(file: File): Promise<MediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/images", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<MediaAsset>(res);
+  return uploadMediaAsset<MediaAsset>(file, "IMAGE");
 }
 
 export async function uploadProjectDocument(file: File): Promise<MediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/documents", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<MediaAsset>(res);
+  return uploadMediaAsset<MediaAsset>(file, "DOCUMENT");
 }
 export async function uploadProjectVideo(file: File): Promise<MediaAsset> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/admin/media/videos", {
-    method: "POST",
-    body: formData,
-  });
-
-  return parseJson<MediaAsset>(res);
+  return uploadMediaAsset<MediaAsset>(file, "VIDEO");
 }
 export async function generateProjectDraft(
   input: GenerateProjectInput
