@@ -3,6 +3,7 @@
 import React from "react";
 import { ArrowDown, ArrowUp, CheckCircle2, Loader2, Plus, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import ProjectGalleryManager from "@/components/admin/projects/ProjectGalleryManager";
+import AdminErrorNotification from "@/components/admin/AdminErrorNotification";
 import { getYouTubeThumbnailUrl, parseYouTubeVideoId } from "@/lib/youtube";
 import {
   createProject,
@@ -438,16 +439,15 @@ export default function ProjectAiForm() {
   }
   return (
     <div className="space-y-5">
-      {(error || success) && (
+      {error && <AdminErrorNotification message={error} onDismiss={() => setError(null)} />}
+      {!error && success && (
         <div
           className={`fixed left-1/2 top-16 z-50 flex w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 items-start gap-3 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
-            error
-              ? "border-red-800 bg-red-950/95 text-red-200"
-              : "border-green-800 bg-green-950/95 text-green-200"
+            "border-green-800 bg-green-950/95 text-green-200"
           }`}
         >
-          {!error && <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
-          <p>{error || success}</p>
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <p>{success}</p>
         </div>
       )}
 

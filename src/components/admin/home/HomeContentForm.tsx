@@ -337,7 +337,7 @@ function ImageInput({
           <input
             id={id}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
             disabled={uploading}
             onChange={(event) => onChange(event.target.files?.[0])}
             className="block w-full text-sm text-neutral-300 file:mr-4 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-neutral-100 hover:file:bg-neutral-700 disabled:opacity-50"

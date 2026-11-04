@@ -6,6 +6,7 @@ import { Loader2, Save, Sparkles, Upload } from "lucide-react";
 import { createNews, generateNewsDraft, uploadNewsImage } from "@/services/news";
 import type { GenerateNewsInput, GeneratedNewsDraft, NewsStatus } from "@/types/news";
 import NewsWebPreview from "@/components/admin/news/NewsWebPreview";
+import AdminErrorNotification from "@/components/admin/AdminErrorNotification";
 
 const inputClass =
   "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60";
@@ -166,15 +167,12 @@ export default function NewsAiForm() {
 
   return (
     <div className="space-y-5">
-      {(error || success) && (
+      {error && <AdminErrorNotification message={error} onDismiss={() => setError(null)} />}
+      {!error && success && (
         <div
-          className={`fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border p-4 text-sm shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl ${
-            error
-              ? "border-red-800 bg-red-950/95 text-red-200"
-              : "border-green-800 bg-green-950/95 text-green-200"
-          }`}
+          className="fixed left-1/2 top-16 z-50 w-fit max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-green-800 bg-green-950/95 p-4 text-sm text-green-200 shadow-2xl shadow-black/40 backdrop-blur-md sm:top-4 sm:max-w-3xl"
         >
-          {error || success}
+          {success}
         </div>
       )}
 
