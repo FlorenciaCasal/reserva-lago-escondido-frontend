@@ -1,115 +1,85 @@
-# Sistema de Gestión de Visitas – Reserva Natural Lago escondido
+# Reserva Natural Lago Escondido - Frontend
 
-Aplicación web desarrollada para la **gestión y control de visitas a una reserva natural**, con foco en la regulación de capacidad, la protección del entorno y la experiencia del visitante.
+Frontend público y panel administrativo de RNLE. Está construido con Next.js App Router y consume la API REST del backend Spring Boot.
 
-El sistema se encuentra actualmente **en producción** y cuenta con un **sitio público** y un **panel de administración con acceso restringido**.  
-Está diseñado para crecer de forma progresiva incorporando nuevas funcionalidades a futuro.
+## Stack
 
-🌐 Sitio en producción:  
-https://www.reservalagoescondido.com.ar
+- Next.js 15.3.8
+- Node.js 24 LTS recomendado; mínimo técnico: 18.18.0 (Next.js 15.3.8 también admite Node.js 20+)
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- React Hook Form, Yup, Framer Motion y Lucide React
 
----
+## Funcionalidades
 
-## 🎯 Objetivo del sistema
+- Reservas de visitas, disponibilidad y consulta de reservas.
+- Panel administrativo para usuarios, reservas, capacidad y disponibilidad.
+- Home administrable, incluyendo Hero y proyectos destacados.
+- Contenido público de Conservar, Habitar y Producir.
+- Gestión de Proyectos, Avances, Novedades, documentos y galerías.
+- Imágenes y videos de YouTube en contenido editorial.
+- Generación asistida de contenido mediante OpenAI, a través del backend.
+- Metadata SEO, Open Graph, JSON-LD, sitemap y robots.
 
-- Regular el flujo de visitantes para preservar la flora y fauna del área protegida.
-- Facilitar la gestión de reservas y capacidades diarias.
-- Brindar una experiencia clara tanto para visitantes como para el personal de control.
+## Desarrollo local
 
----
+Requisitos: Node.js 24 LTS recomendado, o una versión compatible desde 18.18.0, npm y un backend accesible en `http://localhost:8080`.
 
-## 🧭 Funcionalidades principales
-
-### Sitio público
-- Visualización de información general de la reserva.
-- Gestión de reservas por parte de los visitantes.
-- Página pública de detalle de reserva.
-- Acceso a la ubicación mediante integración con **Google Maps**.
-
-### Panel de administración (acceso restringido)
-- Gestión de reservas, usuarios y disponibilidad.
-- Visualización de reservas confirmadas por día.
-- Control de capacidad diaria para evitar sobrecarga del área protegida.
-- Gestión de excepciones por fecha:
-  - Habilitación / deshabilitación de días específicos.
-  - Habilitación / deshabilitación de meses completos.
-- Filtros avanzados de reservas:
-  - Estado
-  - Fecha
-  - DNI
-  - Nombre
-- Exportación de reservas a **Excel**.
-
----
-
-## 🔐 Seguridad y autenticación
-
-- Autenticación mediante **JWT almacenado en cookies HttpOnly**.
-- Control de roles:
-  - Administrador completo
-  - Administrador con permisos limitados
-- Acceso restringido al panel administrativo.
-
----
-
-## 🧩 Arquitectura y tecnologías
-
-### Frontend
-- **Next.js** (App Router)
-- **React**
-- **TypeScript**
-- Renderizado moderno orientado a performance y escalabilidad.
-
-### Backend
-- Integración con backend desarrollado en **Spring Boot**.
-- Comunicación mediante **APIs REST**.
-
-### Servicios externos
-- Notificaciones transaccionales por **WhatsApp** mediante **Twilio** para:
-  - Confirmación de visitas
-  - Cancelación de reservas
-
----
-
-## 🚀 Desarrollo local
+El backend local debe permitir el origen del frontend mediante CORS. Para desarrollo, configurar el backend para aceptar el origen local utilizado por Next.js, normalmente `http://localhost:3000`.
 
 ```bash
+npm ci
 npm run dev
-# o
-yarn dev
-# o
-pnpm dev
 ```
----
 
-## 🛠 Operación: errores y modo mantenimiento
+Validaciones:
 
-### 404 / Not Found
-- El archivo `app/not-found.tsx` se muestra automáticamente cuando:
-  - se accede a una ruta inexistente (404),
-  - o cuando alguna página llama a `notFound()` (si se implementa).
+```bash
+npm run lint
+npm run build
+```
 
-No es necesario importarlo ni llamarlo manualmente.
+## Variables de entorno
 
-### Modo mantenimiento (frontend)
-- El sitio puede mostrarse en modo mantenimiento para evitar una experiencia rota durante despliegues o caídas del backend.
+Crear un `.env.local` local, sin versionarlo:
 
-- **Variable de entorno (Vercel / local):**
-  - `NEXT_PUBLIC_MAINTENANCE_MODE=true | false`
+| Variable | Uso |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL base pública del backend |
+| `APP_ORIGIN` | Origen usado para URLs canónicas y metadata absoluta |
+| `NEXT_PUBLIC_MAINTENANCE_MODE` | Activa el modo mantenimiento del sitio |
+| `ADMIN_USER` | Usuario de servicio server-only para consultas administrativas internas |
+| `ADMIN_PASS` | Contraseña de servicio server-only para consultas administrativas internas |
 
-- **Comportamiento:**
-  - Si `NEXT_PUBLIC_MAINTENANCE_MODE=true`, el `RootLayout` renderiza `MaintenancePage` y no carga el sitio normal.
-  - Si es `false`, funciona normalmente.
+En producción, las variables se configuran en Vercel. `ADMIN_USER` y `ADMIN_PASS` son exclusivamente server-only: nunca deben tener prefijo `NEXT_PUBLIC_`, exponerse al navegador ni incluirse en el repositorio. Nunca incluir tokens, cookies, claves ni contraseñas en el repositorio.
 
-- > Nota: el modo mantenimiento se activa de forma manual (no cambia automáticamente).
+## Arquitectura
 
+- Las páginas públicas viven en `src/app`.
+- Los componentes reutilizables están en `src/components`.
+- Las llamadas a la API están en `src/services` y `src/app/api`.
+- La autenticación administrativa usa la cookie `auth_token`; el JWT no se expone al JavaScript del navegador.
+- El Home obtiene contenido administrable del backend y utiliza una caché pública de aproximadamente 60 segundos.
 
+## Subidas multimedia
 
+Las subidas administrativas utilizan `src/services/mediaUpload.ts` y autorizaciones temporales para enviar los archivos directamente al backend, evitando el límite de payload de las funciones de Vercel.
 
-instagram:
-Crear una nueva publicación en Instagram y seleccionar la foto.
-En el texto de la publicación, pegar el Caption.
-Debajo agregar el CTA.
-Al final agregar los Hashtags con #.
-En las opciones de accesibilidad de Instagram, cargar el Texto alternativo.
-Revisar todo y publicar.
+- Imágenes: límite de 20 MiB.
+- Documentos: límite de 10 MiB.
+- Videos: límite de 50 MiB.
+- Las imágenes grandes pueden redimensionarse a un máximo de 2560 px y convertirse a WebP en el navegador cuando reduce el tamaño transferido.
+- El backend realiza la etapa final mediante ImageMagick, incluyendo la conversión, el procesamiento y la eliminación de metadatos EXIF, GPS, XMP e IPTC.
+
+## SEO y despliegue
+
+El sitio público es `https://www.reservalagoescondido.com.ar`. Vercel construye el proyecto desde la rama de producción. Revisar `APP_ORIGIN` y `NEXT_PUBLIC_API_URL` antes de publicar.
+
+El sitio genera `robots.txt` y `sitemap.xml`. Las páginas administrativas no deben indexarse. Las páginas dinámicas de proyectos y novedades deben publicarse únicamente cuando el backend las marque como públicas.
+
+El favicon se define mediante `src/app/icon.png`. Las imágenes estáticas se sirven desde `public`.
+
+## Mantenimiento
+
+Antes de publicar, ejecutar lint y build, revisar las variables de Vercel y probar login, reservas, Home, contenido editorial y subidas multimedia. No agregar backups, dumps, CSV, `.env` ni archivos de staging al repositorio.

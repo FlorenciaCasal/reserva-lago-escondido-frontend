@@ -36,8 +36,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Backups, exports and local staging data
+*.dump
+*.tmp
+*.temp
+.staging-data/
+inventario-media-rnle.csv
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel
