@@ -3,8 +3,8 @@
 //  Usamos BEARER. Cambiá a "basic" si tu back aceptara Basic Auth
 // const ADMIN_AUTH = (process.env.ADMIN_AUTH || "bearer").toLowerCase() as "bearer" | "basic";
 
-// const ADMIN_USER = process.env.ADMIN_USER || "admin";
-// const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+// const ADMIN_USER = process.env.ADMIN_USER;
+// const ADMIN_PASS = process.env.ADMIN_PASS;
 
 // ─── Basic ───────────────────────────────────────────────────────────────────
 // function adminBasicHeader() {
@@ -127,13 +127,16 @@ export async function publicFetch(path: string, init: RequestInit = {}) {
   return fetch(url, { cache: "no-store", ...init });
 }
 
-const ADMIN_USER = process.env.ADMIN_USER || "admin@lago-escondido.com";
-const ADMIN_PASS = process.env.ADMIN_PASS || "admin123";
+const ADMIN_USER = process.env.ADMIN_USER?.trim();
+const ADMIN_PASS = process.env.ADMIN_PASS?.trim();
 
 let serviceToken: string | null = null;
 
 async function getServiceToken() {
   if (serviceToken) return serviceToken;
+  if (!ADMIN_USER || !ADMIN_PASS) {
+    throw new Error("Service authentication is not configured");
+  }
 
   const resp = await fetch(`${BACKEND}/api/auth/login`, {
     method: "POST",
