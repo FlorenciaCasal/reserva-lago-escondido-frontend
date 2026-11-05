@@ -46,8 +46,8 @@ const mediaItems: MediaSlide[] = [
   },
 {
     type: "image",
-    src: "/img/2026-reacondicionada.webp",
-    alt: "Vista del Lago Escondido y su entorno en 2026",
+    src: "/img/2026.webp",
+    alt: "Paisaje del parque alpino con estanque sereno",
   },
 ];
 
