@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export type MediaSlide =
@@ -55,6 +55,17 @@ export default function HabitarHistoryCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const item = mediaItems[activeIndex];
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const preloadedSources = useRef(new Set<string>());
+
+  useEffect(() => {
+    const nextItem = mediaItems[(activeIndex + 1) % mediaItems.length];
+    if (nextItem.type !== "image" || preloadedSources.current.has(nextItem.src)) return;
+
+    preloadedSources.current.add(nextItem.src);
+    const image = new Image();
+    image.decoding = "async";
+    image.src = nextItem.src;
+  }, [activeIndex]);
 
   // Pause on replacement or unmount, including navigation away from this page.
   const attachVideo = useCallback((video: HTMLVideoElement | null) => {
