@@ -26,11 +26,32 @@ export default function PublicMediaCarousel({ items, imageAltFallback, compact =
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [playingId, setPlayingId] = React.useState<string | null>(null);
   const [imageOrientation, setImageOrientation] = React.useState<"landscape" | "portrait" | "square" | null>(null);
+  const preloadedSources = React.useRef(new Set<string>());
+  const preloadedGalleryKey = React.useRef<string | null>(null);
+  const galleryKey = React.useMemo(
+    () => sorted.map((item) => `${item.id}:${item.kind}:${item.url}`).join("\u0000"),
+    [sorted],
+  );
   const active = sorted[activeIndex];
 
   React.useEffect(() => {
     setImageOrientation(null);
   }, [active?.id]);
+
+  React.useEffect(() => {
+    if (preloadedGalleryKey.current !== galleryKey) {
+      preloadedSources.current.clear();
+      preloadedGalleryKey.current = galleryKey;
+    }
+
+    const nextItem = sorted[(activeIndex + 1) % sorted.length];
+    if (!nextItem || nextItem.kind !== "IMAGE" || preloadedSources.current.has(nextItem.url)) return;
+
+    preloadedSources.current.add(nextItem.url);
+    const image = new Image();
+    image.decoding = "async";
+    image.src = nextItem.url;
+  }, [activeIndex, galleryKey, sorted]);
 
   if (!active) return null;
 
