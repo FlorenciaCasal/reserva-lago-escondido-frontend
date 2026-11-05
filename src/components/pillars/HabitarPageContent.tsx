@@ -41,7 +41,7 @@ export default function HabitarPageContent() {
   return (
     <main className="bg-[#FAFAF9] text-neutral-900">
       <section className="border-b border-neutral-100 bg-[#F7F7F5]">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 sm:px-8 sm:py-12 md:grid-cols-[minmax(0,1fr)_310px] md:items-center">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-10 pt-16 sm:px-8 sm:py-12 md:grid-cols-[minmax(0,1fr)_310px] md:items-center">
           <div>
             <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-900 sm:text-[48px]">
               Habitar
