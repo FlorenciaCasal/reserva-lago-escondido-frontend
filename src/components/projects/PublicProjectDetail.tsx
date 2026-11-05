@@ -113,8 +113,7 @@ export default function PublicProjectDetail({
           <span className="text-neutral-700">{projectTitle}</span>
         </nav>
 
-        <RevealOnView className="[&:not(.opacity-100)]:translate-y-4" delay={100}>
-          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(360px,1.08fr)] lg:items-center">
+        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(360px,1.08fr)] lg:items-center">
             <div className="space-y-6">
               <div>
                 <h1 className="font-serif text-4xl font-semibold leading-tight text-neutral-950 sm:text-[40px]">
@@ -133,7 +132,7 @@ export default function PublicProjectDetail({
 
             </div>
 
-            <div className="overflow-hidden rounded-[18px] shadow-[0_22px_54px_-34px_rgba(15,23,42,0.48)]">
+            <RevealOnView className="overflow-hidden rounded-[18px] shadow-[0_22px_54px_-34px_rgba(15,23,42,0.48)]">
               {hasProjectVideo && project.videoUrl ? (
                 isUploadedVideo(project.videoUrl, project.videoAssetId) ? (
                   <video
@@ -170,9 +169,8 @@ export default function PublicProjectDetail({
                   Sin imagen principal
                 </div>
               )}
-            </div>
-              </div>
-        </RevealOnView>
+            </RevealOnView>
+        </div>
       </section>
 
       <section className="border-y border-neutral-200 bg-[#FAFAF9]">
@@ -182,14 +180,12 @@ export default function PublicProjectDetail({
       </section>
 
       <section id="descripcion" className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-14">
-        <RevealOnView className="max-w-3xl [&:not(.opacity-100)]:translate-y-4" delay={120}>
-          <article>
+        <article className="max-w-3xl">
             <h2 className="font-serif text-3xl font-semibold text-neutral-900">Descripción</h2>
             <div className="mt-6 whitespace-pre-wrap text-sm font-normal leading-7 text-neutral-700 md:text-base md:leading-8 lg:text-lg lg:leading-9">
               {renderLinkedText(project.content)}
             </div>
-          </article>
-        </RevealOnView>
+        </article>
       </section>
 
       {hasGallery && (
@@ -202,7 +198,7 @@ export default function PublicProjectDetail({
 
       {hasAdvances && (
         <section id="avances" className="mx-auto max-w-7xl px-4 py-4 sm:px-8">
-          <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
+          <div className="space-y-6">
             <div>
               <h2 className="font-serif text-3xl font-semibold text-neutral-900">Avances del proyecto</h2>
               <p className="mt-4 max-w-3xl text-base leading-8 text-neutral-700 sm:text-[17px]">
@@ -233,26 +229,26 @@ export default function PublicProjectDetail({
                         {renderLinkedText(advance.description)}
                       </p>
                       {advanceMediaItems(advance).length > 0 && (
-                        <div className="mt-5 sm:mt-6">
+                        <RevealOnView className="mt-5 sm:mt-6">
                           <PublicMediaCarousel
                             compact
                             items={advanceMediaItems(advance)}
                             imageAltFallback={advance.title}
                           />
-                        </div>
+                        </RevealOnView>
                       )}
                     </div>
                   </article>
                 );
               })}
             </div>
-          </RevealOnView>
+          </div>
         </section>
       )}
 
       {hasDocuments && (
         <section id="documentos" className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
-          <RevealOnView className="space-y-6 [&:not(.opacity-100)]:translate-y-4" delay={100}>
+          <div className="space-y-6">
             <h2 className="font-serif text-3xl font-semibold text-neutral-900">Documentos</h2>
             <div className="grid min-w-0 gap-4 md:grid-cols-2">
               {documents.map((document) => (
@@ -288,7 +284,7 @@ export default function PublicProjectDetail({
                 </article>
               ))}
             </div>
-          </RevealOnView>
+          </div>
         </section>
       )}
     </main>
