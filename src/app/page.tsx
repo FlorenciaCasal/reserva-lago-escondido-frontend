@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import HomeFeaturedProjects from "@/components/home/HomeFeaturedProjects";
 import HomeHero from "@/components/home/HomeHero";
 import HomeNewsPreview from "@/components/home/HomeNewsPreview";
@@ -38,12 +39,16 @@ export default async function Page() {
       </section>
       </RevealOnView>
       <HomePillars content={content} />
-      <RevealOnView>
-        <HomeFeaturedProjects content={content} />
-      </RevealOnView>
-      <RevealOnView>
-        <HomeNewsPreview content={content} />
-      </RevealOnView>
+      <Suspense fallback={null}>
+        <RevealOnView>
+          <HomeFeaturedProjects content={content} />
+        </RevealOnView>
+      </Suspense>
+      <Suspense fallback={null}>
+        <RevealOnView>
+          <HomeNewsPreview content={content} />
+        </RevealOnView>
+      </Suspense>
       <RevealOnView>
         <HomeVisitsCTA content={content} />
       </RevealOnView>
