@@ -186,7 +186,7 @@ export default function ReservationWizard({
         <OptionButton
           title="Particular"
           subtitle="Individual, familia o amigos."
-          imageSrc="/img/particular.jpg"
+          imageSrc="/img/particular.webp"
           disabled={individualOff}
           onSelect={() => {
             if (individualOff) return;

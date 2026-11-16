@@ -44,7 +44,7 @@ export const fallbackHomeContent: HomeContent = {
   visitsText:
     "Organizamos visitas para acercar la experiencia de la Reserva Natural Lago Escondido a quienes desean conocer, aprender y disfrutar este territorio con responsabilidad.",
   visitsCtaLabel: "Reservar visita",
-  visitsImageUrl: "/img/particular.jpg",
+  visitsImageUrl: "/img/particular.webp",
 };
 
 async function parseJson<T>(res: Response): Promise<T> {

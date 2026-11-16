@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     description:
       "Reserva tu visita a la Reserva Natural Lago Escondido y conoce el entorno natural de El Foyel con responsabilidad.",
     url: siteUrl("/visitas"),
-    images: [ogImage("/img/particular.jpg")],
+    images: [ogImage("/img/particular.webp")],
     type: "website",
   },
 };
