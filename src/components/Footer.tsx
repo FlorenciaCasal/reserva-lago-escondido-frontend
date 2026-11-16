@@ -98,10 +98,10 @@ export default function Footer() {
               SEGUINOS
             </h4>
             <div className="flex items-center gap-3 sm:gap-4 sm:justify-end">
-              <Link href="https://www.instagram.com/reservalagoescondido" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <Link href="https://www.instagram.com/lagoescondido.ok/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                 <InstagramIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
               </Link>
-              <Link href="https://www.facebook.com/profile.php?id=61586309443182" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <Link href="https://www.facebook.com/lagoescondido.ok" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                 <FacebookIcon className="h-5 w-5 opacity-80 transition hover:opacity-100" />
               </Link>
             </div>

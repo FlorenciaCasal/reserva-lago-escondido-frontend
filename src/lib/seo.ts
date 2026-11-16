@@ -56,8 +56,8 @@ export function organizationJsonLd() {
       addressCountry: "AR",
     },
     sameAs: [
-      "https://www.instagram.com/reservalagoescondido",
-      "https://www.facebook.com/profile.php?id=61586309443182",
+      "https://www.instagram.com/lagoescondido.ok/",
+      "https://www.facebook.com/lagoescondido.ok",
     ],
   };
 }
