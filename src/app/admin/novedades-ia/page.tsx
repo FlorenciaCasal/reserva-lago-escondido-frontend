@@ -43,7 +43,7 @@ export default async function NovedadesIaPage() {
         </p>
       </header>
 
-      <NewsAiForm />
+      <NewsAiForm isAdmin={isAdmin} />
     </div>
   );
 }

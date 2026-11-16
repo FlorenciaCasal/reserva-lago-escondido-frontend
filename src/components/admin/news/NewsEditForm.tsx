@@ -50,6 +50,7 @@ function isInvalidLocalUrl(value?: string | null) {
 
 type Props = {
   newsId?: string;
+  isAdmin?: boolean;
 };
 
 const emptyForm: UpdateNewsInput = {
@@ -95,7 +96,7 @@ function comparableForm(value: UpdateNewsInput) {
   };
 }
 
-export default function NewsEditForm({ newsId }: Props) {
+export default function NewsEditForm({ newsId, isAdmin = false }: Props) {
   const isCreate = !newsId;
   const [loading, setLoading] = React.useState(!isCreate);
   const [saving, setSaving] = React.useState(false);
@@ -134,6 +135,11 @@ export default function NewsEditForm({ newsId }: Props) {
 
   const baseStatus = news?.status ?? "DRAFT";
   const currentStatus = form.status ?? baseStatus;
+  const statusOptions = isCreate
+    ? isAdmin
+      ? newsStatusOptions.DRAFT
+      : [{ value: "DRAFT" as NewsStatus, label: "Borrador" }]
+    : newsStatusOptions[baseStatus];
   const imageUrl = getPublicUrl(form.imageUrl);
   const videoUrl = getPublicUrl(form.videoUrl);
   const invalidImageUrl = isInvalidLocalUrl(form.imageUrl);
@@ -169,7 +175,7 @@ export default function NewsEditForm({ newsId }: Props) {
         videoAssetId: form.videoAssetId ?? null,
         videoUrl,
         editorialDate: form.editorialDate || null,
-        status: form.status,
+        status: isCreate && !isAdmin ? "DRAFT" : form.status,
       };
       const saved = isCreate ? await createNews(payload) : await updateNews(newsId, payload);
       const nextForm = newsToForm(saved);
@@ -339,15 +345,20 @@ export default function NewsEditForm({ newsId }: Props) {
                 <select
                   className={inputClass}
                   value={currentStatus}
-                  disabled={saving || uploadingImage || uploadingVideo}
+                  disabled={saving || uploadingImage || uploadingVideo || (isCreate && !isAdmin)}
                   onChange={(event) => setField("status", event.target.value as NewsStatus)}
                 >
-                  {newsStatusOptions[baseStatus].map((option) => (
+                  {statusOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
+                {isCreate && !isAdmin && (
+                  <p className="text-xs text-neutral-500">
+                    Los administradores limitados crean novedades como borrador.
+                  </p>
+                )}
               </label>
               <label className="block space-y-1">
                 <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">

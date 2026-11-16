@@ -43,7 +43,7 @@ export default async function ProyectosIaPage() {
         </p>
       </header>
 
-      <ProjectAiForm />
+      <ProjectAiForm isAdmin={isAdmin} />
     </div>
   );
 }

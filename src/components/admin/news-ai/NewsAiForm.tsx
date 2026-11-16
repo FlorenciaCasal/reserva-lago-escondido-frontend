@@ -49,7 +49,11 @@ function slugify(value: string) {
     .slice(0, 160);
 }
 
-export default function NewsAiForm() {
+type Props = {
+  isAdmin: boolean;
+};
+
+export default function NewsAiForm({ isAdmin }: Props) {
   const router = useRouter();
   const [input, setInput] = React.useState<GenerateNewsInput>(initialInput);
   const [draft, setDraft] = React.useState<GeneratedNewsDraft | null>(null);
@@ -155,7 +159,7 @@ export default function NewsAiForm() {
         videoUrl: null,
         videoAssetId: null,
         editorialDate: editorialDate || null,
-        status,
+        status: isAdmin ? status : "DRAFT",
       });
       router.push(`/admin/novedades/${saved.id}/editar`);
     } catch (err) {
@@ -347,13 +351,18 @@ export default function NewsAiForm() {
                     </span>
                     <select
                       className={inputClass}
-                      disabled={busy}
+                      disabled={busy || !isAdmin}
                       value={status}
                       onChange={(event) => setStatus(event.target.value as NewsStatus)}
                     >
                       <option value="DRAFT">Borrador</option>
-                      <option value="PUBLISHED">Publicado</option>
+                      {isAdmin && <option value="PUBLISHED">Publicado</option>}
                     </select>
+                    {!isAdmin && (
+                      <p className="text-xs text-neutral-500">
+                        Los administradores limitados crean novedades como borrador.
+                      </p>
+                    )}
                   </label>
 
                   <label className="block space-y-1 md:col-span-2">

@@ -124,7 +124,11 @@ function documentTypeFromContentType(contentType: string) {
   return "";
 }
 
-export default function ProjectAiForm() {
+type Props = {
+  isAdmin: boolean;
+};
+
+export default function ProjectAiForm({ isAdmin }: Props) {
   const [input, setInput] = React.useState<GenerateProjectInput>(initialInput);
   const [selectedObjectiveOptions, setSelectedObjectiveOptions] = React.useState<string[]>([]);
   const [selectedTargetAudiences, setSelectedTargetAudiences] = React.useState<string[]>([]);
@@ -136,7 +140,7 @@ export default function ProjectAiForm() {
   const [projectDocuments, setProjectDocuments] = React.useState<DraftProjectDocument[]>([]);
   const [documentForm, setDocumentForm] = React.useState<ProjectDocumentInput>(emptyProjectDocument);
   const [showDocumentForm, setShowDocumentForm] = React.useState(false);
-  const [status, setStatus] = React.useState<ProjectStatus>("PUBLISHED");
+  const [status, setStatus] = React.useState<ProjectStatus>("DRAFT");
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loadingList, setLoadingList] = React.useState(true);
   const [generating, setGenerating] = React.useState(false);
@@ -336,7 +340,7 @@ export default function ProjectAiForm() {
         imageAssetId: mainMediaType === "IMAGE" ? inputImageAssetId : null,
         videoUrl: mainMediaType === "YOUTUBE" ? mainYoutubeUrl.trim() || null : null,
         videoAssetId: null,
-        status,
+        status: isAdmin ? status : "DRAFT",
       });
 
       let failedDocumentCount = 0;
@@ -366,7 +370,7 @@ export default function ProjectAiForm() {
       setMainYoutubeUrl("");
       setProjectDocuments([]);
       setDocumentForm(emptyProjectDocument);
-      setStatus("PUBLISHED");
+      setStatus("DRAFT");
       const failureParts = [];
       if (failedDocumentCount > 0) failureParts.push(`${failedDocumentCount} documento(s)`);
       if (failureParts.length > 0) {
@@ -385,7 +389,7 @@ export default function ProjectAiForm() {
 
   function onCancelDraft() {
     setDraft(null);
-    setStatus("PUBLISHED");
+    setStatus("DRAFT");
     setError(null);
     setSuccess("Borrador descartado. Podes ajustar el brief y generar uno nuevo.");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1115,13 +1119,18 @@ export default function ProjectAiForm() {
                 </span>
                 <select
                   className={inputClass}
-                  disabled={!draft || busy}
+                  disabled={!draft || busy || !isAdmin}
                   value={status}
                   onChange={(event) => setStatus(event.target.value as ProjectStatus)}
                 >
-                  <option value="PUBLISHED">Publicado</option>
                   <option value="DRAFT">Borrador</option>
+                  {isAdmin && <option value="PUBLISHED">Publicado</option>}
                 </select>
+                {!isAdmin && (
+                  <p className="text-xs text-neutral-500">
+                    Los administradores limitados crean proyectos como borrador.
+                  </p>
+                )}
               </label>
             </div>
           </div>
