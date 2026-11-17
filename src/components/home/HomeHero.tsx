@@ -8,6 +8,7 @@ export default function HomeHero({ content }: { content: HomeContent }) {
         src={content.heroImageUrl}
         alt="Reserva Natural Lago Escondido"
         fill
+        unoptimized
         priority
         fetchPriority="high"
         sizes="100vw"
