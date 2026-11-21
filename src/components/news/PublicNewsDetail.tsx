@@ -104,12 +104,9 @@ export default function PublicNewsDetail({ news }: { news: News }) {
 
         <RevealOnView className="mt-8 max-w-3xl [&:not(.opacity-100)]:translate-y-4" delay={120}>
         <section>
-          <div className="space-y-6 text-sm leading-7 text-neutral-800 md:text-base md:leading-8 lg:text-lg lg:leading-9">
-            {paragraphs(news.content).map((paragraph, index) => (
-              <p
-                key={paragraph}
-                className={index === 0 ? "text-lg leading-8 text-neutral-800 sm:text-[19px] sm:leading-9" : ""}
-              >
+          <div className="space-y-6 text-sm leading-7 text-neutral-800 md:text-base md:leading-8 lg:text-[19px] lg:leading-9">
+            {paragraphs(news.content).map((paragraph) => (
+              <p key={paragraph}>
                 {paragraph}
               </p>
             ))}
